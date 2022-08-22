@@ -32,6 +32,8 @@ public:
 	//UŒ‚
 	void Attack();
 
+	Vector3 Root(Vector3 velocity, WorldTransform worldTransform_);
+
 	/// <summary>
 	/// •`‰æ
 	/// </summary>

@@ -10,7 +10,7 @@ PlayerBullet::~PlayerBullet()
 {
 }
 
-void PlayerBullet::Initialize(Model* model, const Vector3& position)
+void PlayerBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity)
 {
 	// NULLチェック
 	assert(model);
@@ -18,6 +18,9 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position)
 	buleetModel_ = model;
 	//テクスチャ読み込み
 	bulletHandle_ = TextureManager::Load("bullet.png");
+
+	//引数で受け取った速度をメンバ変数に代入
+	velocity_ = velocity;
 
 	//ワールドトランスフォームの初期化
 	bulletWorldTransform_.Initialize();
@@ -29,6 +32,9 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position)
 
 void PlayerBullet::Update()
 {
+	//座標を移動させる(1フレーム分の移動量を足しこむ)
+	bulletWorldTransform_.translation_ += velocity_;
+
 #pragma region 行列の更新
 	//スケーリング用行列を宣言
 	Matrix4 matScale;
@@ -76,6 +82,11 @@ void PlayerBullet::Update()
 	bulletWorldTransform_.TransferMatrix();
 
 #pragma endregion
+
+	if (--deathTimer_ <= 0)
+	{
+		isDead_ = true;
+	}
 }
 
 void PlayerBullet::Draw(const ViewProjection& viewProjection)

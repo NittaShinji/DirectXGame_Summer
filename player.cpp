@@ -24,6 +24,11 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 void Player::Update()
 {
 
+	//デスフラグの立った弾を削除
+	bullets_.remove_if([](std::unique_ptr<PlayerBullet>& bullet){
+			return bullet->IsDead();
+	});
+
 #pragma region キャラクターの旋回処理
 
 	const float rootSpeed = 0.01f;
@@ -33,18 +38,18 @@ void Player::Update()
 
 	if (input_->PushKey(DIK_C))
 	{
-		playerRoot.x = rootSpeed;
+		playerRoot.y = rootSpeed;
 	}
 	else if (input_->PushKey(DIK_Z))
 	{
-		playerRoot.x = -rootSpeed;
+		playerRoot.y = -rootSpeed;
 	}
 	else
 	{
-		playerRoot.x = 0.0f;
+		playerRoot.y = 0.0f;
 	}
 
-	worldTransform_.rotation_.x += playerRoot.x;
+	worldTransform_.rotation_.y += playerRoot.y;
 
 #pragma endregion
 
@@ -68,7 +73,21 @@ void Player::Update()
 		playerMove.x = 0.0f;
 	}
 
+	if (input_->PushKey(DIK_UP))
+	{
+		playerMove.y = playerSpeed;
+	}
+	else if (input_->PushKey(DIK_DOWN))
+	{
+		playerMove.y = -playerSpeed;
+	}
+	else
+	{
+		playerMove.y = 0.0f;
+	}
+
 	worldTransform_.translation_.x += playerMove.x;
+	worldTransform_.translation_.y += playerMove.y;
 
 #pragma endregion
 
@@ -171,13 +190,20 @@ void Player::Attack()
 	//弾の生成し、初期化
 	if (input_->PushKey(DIK_SPACE))
 	{
-		//自キャラの座標をコピー
-		Vector3 position = worldTransform_.translation_;
+		////自キャラの座標をコピー
+		//Vector3 position = worldTransform_.translation_;
+
+		//　弾の速度
+		const float kBulletSpeed = 1.0f;
+		Vector3 velocity(0, 0, kBulletSpeed);
+
+		// 速度ベクトルを自機の向きに合わせて回転させる
+		velocity = Root(velocity, worldTransform_);
 
 		//弾を生成し、初期化
 		//PlayerBullet* newBullet = new PlayerBullet();
 		std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(model_ ,worldTransform_.translation_);
+		newBullet->Initialize(model_ ,worldTransform_.translation_,velocity);
 
 		//弾を登録する
 		//bullet_.reset(newBullet);
@@ -198,4 +224,21 @@ void Player::Draw(ViewProjection& viewProjection, uint32_t textureHandle)
 	{
 		bullet->Draw(viewProjection);
 	}
+}
+
+Vector3 Player::Root(Vector3 velocity, WorldTransform worldTransform_)
+{	
+	//単位ベクトル
+	Vector3 frontVec = { 0.0f, 0.0f, 1.0f };
+	//結果用のベクトル
+	Vector3 resultVec = { 0.0f, 0.0f, 0.0f };
+
+	resultVec.x = (cos(worldTransform_.rotation_.y) * frontVec.x +
+		sin(worldTransform_.rotation_.y) * frontVec.z);
+	resultVec.z = (-sinf(worldTransform_.rotation_.y) * frontVec.x +
+		cosf(worldTransform_.rotation_.y) * frontVec.z);
+
+	return resultVec;
+
+	
 }
