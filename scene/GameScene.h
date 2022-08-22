@@ -9,8 +9,6 @@
 #include "Sprite.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
-#include "DebugCamera.h"
-#include "Player.h"
 
 /// <summary>
 /// ゲームシーン
@@ -18,23 +16,6 @@
 class GameScene {
 
   public: // メンバ関数
-
-	//パーツID
-	  enum PartId {
-
-		  kRoot = 0,	//大元
-		  kSpine,	//脊髄
-		  kChest,	//胸
-		  kHead,	//頭
-		  kArmL,	//左腕
-		  kArmR,	//右腕
-		  kHip,		//尻
-		  kLegL,	//左足
-		  kLegR,	//左足
-
-		  kNumPartId
-	  };
-
 	/// <summary>
 	/// コンストクラタ
 	/// </summary>
@@ -49,8 +30,6 @@ class GameScene {
 	/// 初期化
 	/// </summary>
 	void Initialize();
-	Matrix4 WorldMatrix(Matrix4 matworld, Matrix4 matScale, Matrix4 matRot, Matrix4 matTrans);
-
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -67,53 +46,8 @@ class GameScene {
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
 	DebugText* debugText_ = nullptr;
-	WinApp* winApp_ = nullptr;
 
 	/// <summary>
 	/// ゲームシーン用
-
-	//単位行列
-	Matrix4 frontVec;
-
-	//テクスチャハンドル
-	uint32_t textureHandle_ = 0;
-	uint32_t textureRayHandle_ = 0;
-
-	//3Dモデル
-	Model* model_ = nullptr;
-	Model* rayModel = nullptr;
-
-	//光線
-	WorldTransform  ray = { 0 };
-
-	//始点
-	Vector3 startray = { 1,0,0 };
-	//終点
-	Vector3 endaray = { 1,0,1 };
-
-	//オブジェクトの半径
-	float objectRadius = 0.0f;
-
-	//当たり判定フラグ
-	bool rayCollision = 0;
-
-	float moveCount = 0.0f;
-
-	//WorldTransform rays = { 0 };
-
-	Player* player_ = nullptr;
-
-	//ビュープロジェクション
-	ViewProjection viewProjection_;
-
-	//デバッグカメラ
-	DebugCamera* debugCamera_ = nullptr;
-
-	//デバッグカメラ有効
-	bool isDebugCameraActive_ = false;
-
-	//カメラ上方向の角度
-	float viewAngle = 0.0f;
-
 	/// </summary>
 };
