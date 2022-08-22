@@ -23,7 +23,31 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 
 void Player::Update()
 {
-	
+
+#pragma region キャラクターの旋回処理
+
+	const float rootSpeed = 0.01f;
+
+	// キャラクターの移動ベクトル
+	Vector3 playerRoot = { 0,0,0 };
+
+	if (input_->PushKey(DIK_C))
+	{
+		playerRoot.x = rootSpeed;
+	}
+	else if (input_->PushKey(DIK_Z))
+	{
+		playerRoot.x = -rootSpeed;
+	}
+	else
+	{
+		playerRoot.x = 0.0f;
+	}
+
+	worldTransform_.rotation_.x += playerRoot.x;
+
+#pragma endregion
+
 #pragma region キャラクターの移動処理
 
 	const float playerSpeed = 0.05f;
@@ -59,6 +83,19 @@ void Player::Update()
 	worldTransform_.translation_.x = min(worldTransform_.translation_.x, +kMoveLimitX);
 	worldTransform_.translation_.y = max(worldTransform_.translation_.y, -kMoveLimitY);
 	worldTransform_.translation_.y = min(worldTransform_.translation_.y, +kMoveLimitY);
+
+#pragma endregion
+
+#pragma region キャラクターの攻撃
+
+	//キャラクターの攻撃
+	Attack();
+
+	//弾更新
+	if (bullet_)
+	{
+		bullet_->Update();
+	}
 
 #pragma endregion
 
@@ -124,7 +161,27 @@ void Player::Update()
 #endif
 }
 
-void Player::Draw(DebugCamera* debugCamera_, uint32_t textureHandle)
+void Player::Attack()
 {
-	model_->Draw(worldTransform_, debugCamera_->GetViewProjection(), textureHandle_);
+	//弾の生成し、初期化
+	if (input_->PushKey(DIK_SPACE))
+	{
+		//弾を生成し、初期化
+		PlayerBullet* newBullet = new PlayerBullet();
+		newBullet->Initialize(model_ ,worldTransform_.translation_);
+
+		//弾を登録する
+		bullet_ = newBullet;
+	}
+}
+
+void Player::Draw(ViewProjection& viewProjection, uint32_t textureHandle)
+{
+	model_->Draw(worldTransform_, viewProjection, textureHandle_);
+
+	//弾描画
+	if (bullet_)
+	{
+		bullet_->Draw(viewProjection);
+	}
 }

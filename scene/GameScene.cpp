@@ -147,7 +147,7 @@ void GameScene::Draw() {
 
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
-	player_->Draw(debugCamera_,textureHandle_);
+	player_->Draw(viewProjection_,textureHandle_);
 
 	/// </summary>
 

@@ -3,8 +3,10 @@
 #include "WorldTransform.h"
 #include "Model.h"
 #include "DebugCamera.h"
+#include "ViewProjection.h"
 #include "Input.h"
 #include "Debugtext.h"
+#include "PlayerBullet.h"
 
 /// <summary>
 /// 自キャラ
@@ -25,10 +27,13 @@ public:
 	void Update();
 	void PlayerMatrixSet(WorldTransform& worldTransform);
 
+	//攻撃
+	void Attack();
+
 	/// <summary>
 	/// 描画
 	/// </summary>
-	void Draw(DebugCamera* debugCamera_, uint32_t textureHandle);
+	void Draw(ViewProjection& viewProjection, uint32_t textureHandle);
 
 private:
 	// ワールド変換データ
@@ -41,4 +46,6 @@ private:
 	DebugText* debugText_ = nullptr;
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
+	//弾
+	PlayerBullet* bullet_ = nullptr;
 };
