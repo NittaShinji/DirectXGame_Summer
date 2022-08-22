@@ -35,10 +35,24 @@ void Enemy::Initialize(Model* model, const Vector3& position)
 //更新
 void Enemy::Update()
 {
+	switch (phase_)
+	{
+	case Phase::Approach:
+	default:
+		PhsaeApproach();
+		
+		break;
+
+	case Phase::Leave:
+		
+		PhsaeLeave();
+		break;
+	}
+
 	Vector3 enemyVelocity_ = { 0, 0, kEnemySpeed } ;
 
 	//座標を移動させる(1フレーム分の移動量を足しこむ)
-	enemyWorldTransform_.translation_ -= enemyVelocity_;
+	//enemyWorldTransform_.translation_ -= enemyVelocity_;
 
 #pragma region 行列の更新
 	//スケーリング用行列を宣言
@@ -88,4 +102,25 @@ void Enemy::Update()
 void Enemy::Draw(const ViewProjection& viewProjection)
 {
 	enemyModel_->Draw(enemyWorldTransform_, viewProjection, enemyHandle_);
+}
+
+void Enemy::PhsaeApproach()
+{
+	//移動(ベクトルを加算)
+	enemyWorldTransform_.translation_ -= ApproachSpeed;
+	//既定の位置に到達したら離脱
+	if (enemyWorldTransform_.translation_.z < -40.0f)
+	{
+		phase_ = Phase::Leave;
+	}
+}
+
+void Enemy::PhsaeLeave()
+{
+	//移動(ベクトルを加算)
+	enemyWorldTransform_.translation_ += LeaveSpeed;
+	if (enemyWorldTransform_.translation_.z > 40.0f)
+	{
+		phase_ = Phase::Approach;
+	}
 }

@@ -2,9 +2,19 @@
 
 #include "Model.h"
 
+//行動フェーズ
+
 class Enemy
 {
+	
 public:
+
+	enum class Phase
+	{
+		Approach,	//接近する
+		Leave,		//離脱する
+	};
+
 	Enemy();
 	~Enemy();
 
@@ -14,6 +24,10 @@ public:
 	void Update();
 	//描画
 	void Draw(const ViewProjection& viewProjection);
+
+	void PhsaeApproach();
+	void PhsaeLeave();
+
 
 private:
 
@@ -28,6 +42,14 @@ private:
 	// 敵の速度
 	const float kEnemySpeed = 0.1f;
 	
-};
+	//フェーズ
+	Phase phase_ = Phase::Approach;
 
+	//接近フェーズの速度
+	Vector3 ApproachSpeed = { 0,0,0.1 };
+
+	//離脱フェーズの速度
+	Vector3 LeaveSpeed = { 0,0,0.1 };
+
+};
 
