@@ -23,7 +23,6 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 
 void Player::Update()
 {
-
 	//デスフラグの立った弾を削除
 	bullets_.remove_if([](std::unique_ptr<PlayerBullet>& bullet){
 			return bullet->IsDead();

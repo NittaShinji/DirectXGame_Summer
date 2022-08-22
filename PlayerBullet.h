@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Model.h"
-#
 
 //自キャラの弾
 class PlayerBullet
@@ -24,7 +23,7 @@ private:
 	// ワールド変換データ
 	WorldTransform bulletWorldTransform_;
 	// モデル
-	Model* buleetModel_ = nullptr;
+	Model* bulletModel_ = nullptr;
 
 	// テクスチャハンドル
 	uint32_t bulletHandle_ = 0u;

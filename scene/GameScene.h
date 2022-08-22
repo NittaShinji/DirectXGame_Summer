@@ -9,7 +9,9 @@
 #include "Sprite.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
-#include "player.h"
+#include "Player.h"
+#include "Enemy.h"
+
 
 /// <summary>
 /// ゲームシーン
@@ -98,7 +100,12 @@ class GameScene {
 	ViewProjection viewProjection_;
 
 	//プレイヤー
-	Player* player_ = nullptr;
+	//Player* player_ = nullptr;
+
+	//プレイヤーの生成
+	std::unique_ptr<Player> player_;
+	//敵の生成
+	std::unique_ptr<Enemy> enemy_;
 
 	//デバッグカメラ
 	DebugCamera* debugCamera_ = nullptr;

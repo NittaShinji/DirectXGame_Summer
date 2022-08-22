@@ -27,7 +27,6 @@ public:
 	/// XV
 	/// </summary>
 	void Update();
-	void PlayerMatrixSet(WorldTransform& worldTransform);
 
 	//UŒ‚
 	void Attack();

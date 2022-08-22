@@ -6,6 +6,8 @@
 #include <WinApp.h>
 #include <cassert>
 #include <random>
+#include <memory>
+
 
 #ifndef M_PI
 #define M_PI 3.14159 /* 桁数はもっと多い方がいいかも */
@@ -17,7 +19,6 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
-	delete player_;
 }
 
 void GameScene::Initialize() {
@@ -33,11 +34,23 @@ void GameScene::Initialize() {
 	// 3Dモデルの生成
 	model_ = Model::Create();
 
-	//自キャラの生成
-	player_ = new Player();
-	//自キャラの初期化
-	player_->Initialize(model_ ,textureHandle_);
+	////自キャラの生成
+	//player_ = new Player();
+	////自キャラの初期化
+	//player_->Initialize(model_ ,textureHandle_);
 
+	//自キャラの生成と登録
+	Player* newPlayer = new Player;
+	player_.reset(newPlayer);
+	//自キャラの初期化
+	player_->Initialize(model_, textureHandle_);
+
+	//敵の生成
+	Enemy* newEnemy = new Enemy();
+	enemy_.reset(newEnemy);	
+
+	enemy_->Initialize(model_,Vector3(0,0,0));
+	
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
 
@@ -76,8 +89,12 @@ void GameScene::Initialize() {
 
 void GameScene::Update() 
 {
+	assert(player_);
+	assert(enemy_);
+
 	debugCamera_->Update();
 	player_->Update();
+	enemy_->Update();
 
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
@@ -148,6 +165,7 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	player_->Draw(viewProjection_,textureHandle_);
+	enemy_->Draw(viewProjection_);
 
 	/// </summary>
 

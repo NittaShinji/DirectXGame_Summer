@@ -15,7 +15,7 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	// NULLチェック
 	assert(model);
 
-	buleetModel_ = model;
+	bulletModel_ = model;
 	//テクスチャ読み込み
 	bulletHandle_ = TextureManager::Load("bullet.png");
 
@@ -73,10 +73,10 @@ void PlayerBullet::Update()
 	//WorldMatrix(bulletWorldTransform_.matWorld_, matScale, matRot, matTrans);
 
 	//親行列と掛け算代入
-	if (bulletWorldTransform_.parent_ != nullptr)
+	/*if (bulletWorldTransform_.parent_ != nullptr)
 	{
 		bulletWorldTransform_.matWorld_ *= bulletWorldTransform_.parent_->matWorld_;
-	}
+	}*/
 
 	//ワールド行列を転送
 	bulletWorldTransform_.TransferMatrix();
@@ -91,5 +91,5 @@ void PlayerBullet::Update()
 
 void PlayerBullet::Draw(const ViewProjection& viewProjection)
 {
-	buleetModel_->Draw(bulletWorldTransform_, viewProjection, bulletHandle_);
+	bulletModel_->Draw(bulletWorldTransform_, viewProjection, bulletHandle_);
 }
