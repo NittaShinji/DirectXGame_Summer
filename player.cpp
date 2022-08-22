@@ -44,7 +44,35 @@ void Player::Update()
 		playerMove.x = 0.0f;
 	}
 
+	if (input_->PushKey(DIK_UP))
+	{
+		playerMove.y = playerSpeed;
+	}
+	else if (input_->PushKey(DIK_DOWN))
+	{
+		playerMove.y = -playerSpeed;
+	}
+	else
+	{
+		playerMove.y = 0.0f;
+	}
+
+	if (input_->PushKey(DIK_Q))
+	{
+		playerMove.z = playerSpeed;
+	}
+	else if (input_->PushKey(DIK_E))
+	{
+		playerMove.z = -playerSpeed;
+	}
+	else
+	{
+		playerMove.z = 0.0f;
+	}
+
 	worldTransform_.translation_.x += playerMove.x;
+	worldTransform_.translation_.y += playerMove.y;
+	worldTransform_.translation_.z += playerMove.z;
 
 #pragma endregion
 
