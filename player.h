@@ -7,6 +7,8 @@
 #include "Input.h"
 #include "Debugtext.h"
 #include "PlayerBullet.h"
+#include <memory>
+#include <list>
 
 /// <summary>
 /// 自キャラ
@@ -47,5 +49,7 @@ private:
 	// テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
 	//弾
-	PlayerBullet* bullet_ = nullptr;
+	std::list<std::unique_ptr<PlayerBullet>> bullets_;
+	/*std::unique_ptr<PlayerBullet> bullet_;*/
+	/*PlayerBullet* bullet_ = nullptr;*/
 };

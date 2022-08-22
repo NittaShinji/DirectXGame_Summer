@@ -92,10 +92,15 @@ void Player::Update()
 	Attack();
 
 	//’eXV
-	if (bullet_)
+	for (std::unique_ptr<PlayerBullet>& bullet : bullets_)
+	{
+		bullet->Update();
+	}
+
+	/*if (bullet_)
 	{
 		bullet_->Update();
-	}
+	}*/
 
 #pragma endregion
 
@@ -166,12 +171,17 @@ void Player::Attack()
 	//’e‚Ì¶¬‚µA‰Šú‰»
 	if (input_->PushKey(DIK_SPACE))
 	{
+		//©ƒLƒƒƒ‰‚ÌÀ•W‚ğƒRƒs[
+		Vector3 position = worldTransform_.translation_;
+
 		//’e‚ğ¶¬‚µA‰Šú‰»
-		PlayerBullet* newBullet = new PlayerBullet();
+		//PlayerBullet* newBullet = new PlayerBullet();
+		std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerBullet>();
 		newBullet->Initialize(model_ ,worldTransform_.translation_);
 
 		//’e‚ğ“o˜^‚·‚é
-		bullet_ = newBullet;
+		//bullet_.reset(newBullet);
+		bullets_.push_back(std::move(newBullet));
 	}
 }
 
@@ -180,8 +190,12 @@ void Player::Draw(ViewProjection& viewProjection, uint32_t textureHandle)
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);
 
 	//’e•`‰æ
-	if (bullet_)
+	/*if (bullet_)
 	{
 		bullet_->Draw(viewProjection);
+	}*/
+	for (std::unique_ptr<PlayerBullet>& bullet : bullets_)
+	{
+		bullet->Draw(viewProjection);
 	}
 }
