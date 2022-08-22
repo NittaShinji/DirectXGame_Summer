@@ -9,11 +9,21 @@
 #include "Sprite.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
+#include "player.h"
 
 /// <summary>
 /// ゲームシーン
 /// </summary>
 class GameScene {
+
+	enum PartID
+	{
+		Center,
+		Right,
+		Left,
+		Up,
+		Down,
+	};
 
   public: // メンバ関数
 	/// <summary>
@@ -50,4 +60,50 @@ class GameScene {
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
+	/// 
+	/// //単位行列
+	Matrix4 frontVec;
+
+	//テクスチャハンドル
+	uint32_t textureHandle_ = 0;
+	uint32_t textureRayHandle_ = 0;
+	uint32_t textureGroundHandle_ = 0;
+
+	//3Dモデル
+	Model* model_ = nullptr;
+	Model* rayModel = nullptr;
+
+	////ワールドトランスフォーム
+	// 
+	//光線
+	WorldTransform  ray = { 0 };
+
+	//始点
+	Vector3 startray = { 1,0,0 };
+	//終点
+	Vector3 endaray = { 1,0,1 };
+
+	//オブジェクトの半径
+	float objectRadius = 0.0f;
+
+	//当たり判定フラグ
+	bool rayCollision = 0;
+
+	float moveCount = 0.0f;
+
+
+	//WorldTransform rays = { 0 };
+
+	//ビュープロジェクション
+	ViewProjection viewProjection_;
+
+	//プレイヤー
+	Player* player_ = nullptr;
+
+	//デバッグカメラ
+	DebugCamera* debugCamera_ = nullptr;
+
+	//カメラ上方向の角度
+	float viewAngle = 0.0f;
+
 };
