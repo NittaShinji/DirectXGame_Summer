@@ -22,9 +22,6 @@ void Enemy::Initialize(Model* model, const Vector3& position)
 	//テクスチャ読み込み
 	enemyHandle_ = TextureManager::Load("enemy.png");
 
-	////引数で受け取った速度をメンバ変数に代入
-	//enemyVelocity_ = velocity;
-
 	//ワールドトランスフォームの初期化
 	enemyWorldTransform_.Initialize();
 
@@ -32,10 +29,12 @@ void Enemy::Initialize(Model* model, const Vector3& position)
 	enemyWorldTransform_.translation_ = position;
 }
 
+
+
 //更新
 void Enemy::Update()
 {
-	switch (phase_)
+	/*switch (phase_)
 	{
 	case Phase::Approach:
 	default:
@@ -47,12 +46,10 @@ void Enemy::Update()
 		
 		PhsaeLeave();
 		break;
-	}
+	}*/
 
-	Vector3 enemyVelocity_ = { 0, 0, kEnemySpeed } ;
-
-	//座標を移動させる(1フレーム分の移動量を足しこむ)
-	//enemyWorldTransform_.translation_ -= enemyVelocity_;
+	//メンバ関数ポインタに入っている関数を呼び出す
+	(this->*spFuncTable[static_cast<size_t>(phase_)])();
 
 #pragma region 行列の更新
 	//スケーリング用行列を宣言
@@ -124,3 +121,9 @@ void Enemy::PhsaeLeave()
 		phase_ = Phase::Approach;
 	}
 }
+
+//staticで宣言したメンバ関数ポインタテーブルの実態
+void (Enemy::* Enemy::spFuncTable[])() = {
+	&Enemy::PhsaeApproach,	//接近
+	&Enemy::PhsaeLeave,		//離脱
+};
