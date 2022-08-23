@@ -18,7 +18,7 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 
 	// ƒ[ƒ‹ƒh•ÏŠ·‚Ì‰Šú‰»
 	worldTransform_.Initialize();
-
+	
 }
 
 void Player::Update()
