@@ -1,6 +1,6 @@
 #include "Player.h"
-#include "input.h"
 #include <cassert>
+using namespace MathUtility;
 
 void Player::Initialize(Model* model, uint32_t textureHandle)
 {
@@ -239,4 +239,13 @@ Vector3 Player::Root(Vector3 velocity, WorldTransform worldTransform_)
 
 	return resultVec;
 
+}
+
+Vector3 Player::GetWorldPosition()
+{
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	worldPos = worldTransform_.translation_;
+	return worldPos;
 }

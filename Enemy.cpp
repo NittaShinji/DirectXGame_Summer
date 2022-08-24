@@ -1,6 +1,5 @@
 #include "Enemy.h"
-#include "WorldTransform.h"
-#include "Vector3.h"
+#include "Player.h"
 #include <cassert>
 
 Enemy::Enemy()
@@ -120,20 +119,45 @@ void Enemy::Update()
 
 }
 
+Vector3 Enemy::GetWorldPosition()
+{
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	worldPos = enemyWorldTransform_.translation_;
+	return worldPos;
+}
+
 void Enemy::Fire()
 {
+	assert(player_);
 
 	//　弾の速度
 	const float kBulletSpeed = -1.0f;
 	Vector3 velocity(0, 0, kBulletSpeed);
 
+	//自機のワールド座標を取得
+	Vector3 playerPos = player_->GetWorldPosition();
+	//敵のワールド座標を取得
+	Vector3 enemyPos = enemyWorldTransform_.translation_;
+
+	//差分ベクトル
+	Vector3 difVec;
+	//差分ベクトルを求める
+	difVec = playerPos - enemyPos;
+	//差分ベクトルを正規化
+	difVec.normalize();
+	//ベクトルの長さを早さに合わせる
+	const float bulletSpeed = 0.2f;
+	difVec *= bulletSpeed;
+
 	// 速度ベクトルを自機の向きに合わせて回転させる
-	velocity = Root(velocity, enemyWorldTransform_);
+	//velocity = Root(velocity, enemyWorldTransform_);
 
 	//弾を生成し、初期化
 		//PlayerBullet* newBullet = new PlayerBullet();
 	std::unique_ptr<EnemyBullet> newBullet = std::make_unique<EnemyBullet>();
-	newBullet->Initialize(enemyModel_, enemyWorldTransform_.translation_, velocity);
+	newBullet->Initialize(enemyModel_, enemyWorldTransform_.translation_, difVec);
 
 	//弾を登録する
 	//bullet_.reset(newBullet);
@@ -203,3 +227,4 @@ Vector3 Enemy::Root(Vector3 velocity, WorldTransform worldTransform_)
 
 	return resultVec;
 }
+

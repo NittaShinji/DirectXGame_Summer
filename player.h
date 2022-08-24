@@ -38,9 +38,13 @@ public:
 	/// </summary>
 	void Draw(ViewProjection& viewProjection, uint32_t textureHandle);
 
+	//ワールド座標を取得
+	Vector3 GetWorldPosition();
+
 private:
 	// ワールド変換データ
 	WorldTransform worldTransform_;
+
 	// モデル
 	Model* model_ = nullptr;
 	// インプット

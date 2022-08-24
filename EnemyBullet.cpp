@@ -1,5 +1,4 @@
 #include "EnemyBullet.h"
-#include "WorldTransform.h"
 #include <cassert>
 
 EnemyBullet::EnemyBullet()

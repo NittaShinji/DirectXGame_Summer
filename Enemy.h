@@ -9,14 +9,17 @@
 #include "EnemyBullet.h"
 #include <memory>
 #include <list>
+#include <cassert>
 
-//行動フェーズ
+//自機クラスの前方宣言
+class Player;
 
 class Enemy
 {
 	
 public:
 
+	//行動フェーズ
 	enum class Phase
 	{
 		Approach,	//接近する
@@ -44,11 +47,18 @@ public:
 	void ApproachInitialize();
 	void PhsaeLeave();
 
-	
+	//void SetPlayer(std::unique_ptr<Player> player) { player_ = player; }
+	//void SetPlayer(std::unique_ptr<Player> player) { player_ = player; }
+	void SetPlayer(std::shared_ptr<Player> player) { player_ = player; }
+
 private:
 
 	// ワールド変換データ
 	WorldTransform enemyWorldTransform_;
+
+	//ワールド座標を取得
+	Vector3 GetWorldPosition();
+
 	// モデル
 	Model* enemyModel_ = nullptr;
 	// インプット
@@ -63,18 +73,18 @@ private:
 	
 	//フェーズ
 	Phase phase_ = Phase::Approach;
-
 	//接近フェーズの速度
 	Vector3 ApproachSpeed = { 0.1,0,0 };
-
 	//離脱フェーズの速度
 	Vector3 LeaveSpeed = { 0.1,0,0 };
 
 	//弾
 	std::list<std::unique_ptr<EnemyBullet>> bullets_;
-
 	//発射タイマー
 	int32_t bulletCoolTimer = 0;
 
+	//自キャラ
+	std::shared_ptr<Player> player_;
+	
 };
 

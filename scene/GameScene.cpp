@@ -50,6 +50,9 @@ void GameScene::Initialize() {
 	enemy_.reset(newEnemy);	
 
 	enemy_->Initialize(model_,Vector3(0,0,0));
+
+	//敵キャラに自キャラのアドレスを渡す
+	enemy_->SetPlayer(player_);
 	
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();

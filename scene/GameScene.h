@@ -103,7 +103,7 @@ class GameScene {
 	//Player* player_ = nullptr;
 
 	//プレイヤーの生成
-	std::unique_ptr<Player> player_;
+	std::shared_ptr<Player> player_;
 	//敵の生成
 	std::unique_ptr<Enemy> enemy_;
 
