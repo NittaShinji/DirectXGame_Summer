@@ -239,5 +239,4 @@ Vector3 Player::Root(Vector3 velocity, WorldTransform worldTransform_)
 
 	return resultVec;
 
-	
 }
