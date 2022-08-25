@@ -215,10 +215,6 @@ void Player::Draw(ViewProjection& viewProjection, uint32_t textureHandle)
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);
 
 	//’e•`‰æ
-	/*if (bullet_)
-	{
-		bullet_->Draw(viewProjection);
-	}*/
 	for (std::unique_ptr<PlayerBullet>& bullet : bullets_)
 	{
 		bullet->Draw(viewProjection);

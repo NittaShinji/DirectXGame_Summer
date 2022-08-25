@@ -66,7 +66,4 @@ private:
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
 	//”¼Œa
 	const float radius = 0.5f;
-
-	/*std::unique_ptr<PlayerBullet> bullet_;*/
-	/*PlayerBullet* bullet_ = nullptr;*/
 };
