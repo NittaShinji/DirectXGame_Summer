@@ -17,6 +17,7 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
+	delete modelSkydome_;
 }
 
 void GameScene::Initialize() {
@@ -31,6 +32,7 @@ void GameScene::Initialize() {
 
 	// 3Dモデルの生成
 	model_ = Model::Create();
+	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
 
 	////自キャラの生成
 	//player_ = new Player();
@@ -46,8 +48,14 @@ void GameScene::Initialize() {
 	//敵の生成
 	Enemy* newEnemy = new Enemy();
 	enemy_.reset(newEnemy);	
-
+	//敵の初期化
 	enemy_->Initialize(model_,enemyPos);
+
+	//天球の生成
+	Skydome* newSkydome = new Skydome();
+	skydome_.reset(newSkydome);
+	//天球の初期化
+	skydome_->Initialize(modelSkydome_);
 
 	//敵キャラに自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
@@ -96,6 +104,9 @@ void GameScene::Update()
 	debugCamera_->Update();
 	player_->Update();
 	enemy_->Update();
+	skydome_->Update();
+
+	viewProjection_ = debugCamera_->GetViewProjection();
 
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
@@ -168,6 +179,7 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	player_->Draw(viewProjection_,textureHandle_);
 	enemy_->Draw(viewProjection_);
+	skydome_->Draw(viewProjection_);
 
 	/// </summary>
 

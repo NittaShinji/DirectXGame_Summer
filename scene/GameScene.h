@@ -11,6 +11,7 @@
 #include "WorldTransform.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "Skydome.h"
 
 /// <summary>
 /// ゲームシーン
@@ -76,6 +77,7 @@ class GameScene {
 	//3Dモデル
 	Model* model_ = nullptr;
 	Model* rayModel = nullptr;
+	Model* modelSkydome_ = nullptr;
 
 	////ワールドトランスフォーム
 	// 
@@ -104,6 +106,8 @@ class GameScene {
 	std::shared_ptr<Player> player_;
 	//敵の生成
 	std::unique_ptr<Enemy> enemy_;
+	//天球の生成
+	std::unique_ptr<Skydome> skydome_;
 
 	//敵の初期座標
 	Vector3 enemyPos = { 10,0,50 };
