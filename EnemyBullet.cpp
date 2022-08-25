@@ -99,3 +99,26 @@ void EnemyBullet::Draw(const ViewProjection& viewProjection)
 	eBulletModel_->Draw(eBulletWorldTransform_, viewProjection, eBulletHandle_);
 }
 
+void EnemyBullet::OnCollision()
+{
+	//デスフラグを立てる
+	isDead_ = true;
+}
+
+Vector3 EnemyBullet::GetWorldPosition()
+{
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	worldPos = eBulletWorldTransform_.translation_;
+	return worldPos;
+}
+
+float EnemyBullet::GetRadius()
+{
+	//半径を入れる変数
+	float bulletRadius;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	bulletRadius = radius;
+	return bulletRadius;
+}

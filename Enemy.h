@@ -51,13 +51,22 @@ public:
 	//void SetPlayer(std::unique_ptr<Player> player) { player_ = player; }
 	void SetPlayer(std::shared_ptr<Player> player) { player_ = player; }
 
+	// 衝突を検知したら呼び出されるコールバック関数
+	void OnCollision();
+
+	//弾リストを取得
+	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() { return bullets_; }
+
+	//ワールド座標を取得
+	Vector3 GetWorldPosition();
+
+	//半径を取得
+	float GetRadius();
+
 private:
 
 	// ワールド変換データ
 	WorldTransform enemyWorldTransform_;
-
-	//ワールド座標を取得
-	Vector3 GetWorldPosition();
 
 	// モデル
 	Model* enemyModel_ = nullptr;
@@ -85,6 +94,9 @@ private:
 
 	//自キャラ
 	std::shared_ptr<Player> player_;
+
+	//半径
+	const float radius = 0.5f;
 	
 };
 

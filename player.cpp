@@ -249,3 +249,14 @@ Vector3 Player::GetWorldPosition()
 	worldPos = worldTransform_.translation_;
 	return worldPos;
 }
+
+float Player::GetRadius()
+{
+	//半径を入れる変数
+	float playerRadius;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	playerRadius = radius;
+	return playerRadius;
+}
+
+void Player::OnCollision(){}

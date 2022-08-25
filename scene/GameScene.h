@@ -12,7 +12,6 @@
 #include "Player.h"
 #include "Enemy.h"
 
-
 /// <summary>
 /// ゲームシーン
 /// </summary>
@@ -52,6 +51,9 @@ class GameScene {
 	/// 描画
 	/// </summary>
 	void Draw();
+
+	//衝突判定と応答
+	void CheckAllCollisions();
 
   private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
@@ -93,19 +95,21 @@ class GameScene {
 
 	float moveCount = 0.0f;
 
-
 	//WorldTransform rays = { 0 };
 
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
 
-	//プレイヤー
-	//Player* player_ = nullptr;
-
 	//プレイヤーの生成
 	std::shared_ptr<Player> player_;
 	//敵の生成
 	std::unique_ptr<Enemy> enemy_;
+
+	//敵の初期座標
+	Vector3 enemyPos = { 10,0,50 };
+
+	//AB間の距離
+	Vector3 distance;
 
 	//デバッグカメラ
 	DebugCamera* debugCamera_ = nullptr;

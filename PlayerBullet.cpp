@@ -92,3 +92,27 @@ void PlayerBullet::Draw(const ViewProjection& viewProjection)
 {
 	bulletModel_->Draw(bulletWorldTransform_, viewProjection, bulletHandle_);
 }
+
+void PlayerBullet::OnCollision()
+{
+	//デスフラグを立てる
+	isDead_ = true;
+}
+
+float PlayerBullet::GetRadius()
+{
+	//半径を入れる変数
+	float bulletRadius;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	bulletRadius = radius;
+	return bulletRadius;
+}
+
+Vector3 PlayerBullet::GetWorldPosition()
+{
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	worldPos = bulletWorldTransform_.translation_;
+	return worldPos;
+}

@@ -134,7 +134,7 @@ void Enemy::Fire()
 
 	//　弾の速度
 	const float kBulletSpeed = -1.0f;
-	Vector3 velocity(0, 0, kBulletSpeed);
+	Vector3 velocity(kBulletSpeed, 0, 0);
 
 	//自機のワールド座標を取得
 	Vector3 playerPos = player_->GetWorldPosition();
@@ -228,3 +228,13 @@ Vector3 Enemy::Root(Vector3 velocity, WorldTransform worldTransform_)
 	return resultVec;
 }
 
+void Enemy::OnCollision() {}
+
+float Enemy::GetRadius()
+{
+	//半径を入れる変数
+	float bulletRadius;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	bulletRadius = radius;
+	return bulletRadius;
+}
