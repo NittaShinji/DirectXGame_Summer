@@ -113,10 +113,10 @@ class GameScene {
 	//天球の生成
 	std::unique_ptr<Skydome> skydome_;
 	//レールカメラの生成
-	std::shared_ptr<RailCamera> railCamera_;
+	//std::shared_ptr<RailCamera> railCamera_;
 
 	//敵の初期座標
-	Vector3 enemyPos = { 10,0,50 };
+	Vector3 enemyPos = { 10,0,40 };
 
 	//レールカメラの初期座標
 	Vector3 railPos = { 0,0,0 };

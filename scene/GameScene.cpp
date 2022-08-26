@@ -28,7 +28,7 @@ void GameScene::Initialize() {
 	debugText_ = DebugText::GetInstance();
 
 	//ファイル名を指定してテクスチャを読み込む
-	textureHandle_ = TextureManager::Load("mario.jpg");
+	textureHandle_ = TextureManager::Load("maou4.png");
 
 	// 3Dモデルの生成
 	model_ = Model::Create();
@@ -40,16 +40,16 @@ void GameScene::Initialize() {
 	//player_->Initialize(model_ ,textureHandle_);
 	
 	//レールカメラの生成
-	RailCamera* newRailCamera = new RailCamera;
-	railCamera_.reset(newRailCamera);
-	//レールカメラの初期化
-	railCamera_->Initialize(railPos, angle);
+	//RailCamera* newRailCamera = new RailCamera;
+	//railCamera_.reset(newRailCamera);
+	////レールカメラの初期化
+	//railCamera_->Initialize(railPos, angle);
 
 	//自キャラの生成と登録
 	Player* newPlayer = new Player;
 	player_.reset(newPlayer);
-	//自キャラにレールカメラのアドレスを渡す
-	player_->SetRailCamera(railCamera_);
+	////自キャラにレールカメラのアドレスを渡す
+	//player_->SetRailCamera(railCamera_);
 	//自キャラの初期化
 	player_->Initialize(model_, textureHandle_);
 	
@@ -113,10 +113,10 @@ void GameScene::Update()
 	player_->Update();
 	enemy_->Update();
 	skydome_->Update();
-	railCamera_->Update();
+	//railCamera_->Update();
 
-	//viewProjection_ = debugCamera_->GetViewProjection();
-	viewProjection_ = railCamera_->GetViewProjection();
+	viewProjection_ = debugCamera_->GetViewProjection();
+	//viewProjection_ = railCamera_->GetViewProjection();
 	
 	//行列の再計算
 	viewProjection_.UpdateMatrix();

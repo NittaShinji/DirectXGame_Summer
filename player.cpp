@@ -8,7 +8,7 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 	// NULLチェック
 	assert(model);
 	assert(textureHandle);
-	assert(railCamera_);
+	//assert(railCamera_);
 	
 	//受け取ったデータをメンバ変数に記録する
 	model_ = model;
@@ -19,19 +19,19 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 	debugText_ = DebugText::GetInstance();
 
 	//レールカメラのワールド行列を取得
-	railWorldTransform = railCamera_->GetWorldTransform();
+	//railWorldTransform = railCamera_->GetWorldTransform();
 
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
-	worldTransform_.translation_ = { 0,0,40 };
-	worldTransform_.parent_ = &railWorldTransform;
+	worldTransform_.translation_ = { 0,0,0 };
+	/*worldTransform_.parent_ = &railWorldTransform;*/
 
 }
 
 void Player::Update()
 {
 	//レールカメラのワールド行列を取得
-	railWorldTransform = railCamera_->GetWorldTransform();
+	//railWorldTransform = railCamera_->GetWorldTransform();
 
 	//デスフラグの立った弾を削除
 	bullets_.remove_if([](std::unique_ptr<PlayerBullet>& bullet){
@@ -176,8 +176,8 @@ void Player::Update()
 	}*/
 
 	//レールカメラのワールド行列を取得
-	Matrix4 railCameraMatWorld = railCamera_->GetMatWorld();
-	worldTransform_.matWorld_ *= railCameraMatWorld;
+	/*Matrix4 railCameraMatWorld = railCamera_->GetMatWorld();
+	worldTransform_.matWorld_ *= railCameraMatWorld;*/
 
 	//worldTransform_.matWorld_ *= 
 

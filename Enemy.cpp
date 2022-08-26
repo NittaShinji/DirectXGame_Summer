@@ -19,7 +19,7 @@ void Enemy::Initialize(Model* model, const Vector3& position)
 	enemyModel_ = model;
 
 	//テクスチャ読み込み
-	enemyHandle_ = TextureManager::Load("enemy.png");
+	enemyHandle_ = TextureManager::Load("suraimu.png");
 
 	////引数で受け取った速度をメンバ変数に代入
 	//enemyVelocity_ = velocity;
@@ -184,7 +184,7 @@ void Enemy::ApproachInitialize()
 void Enemy::PhsaeApproach()
 {
 	//移動(ベクトルを加算)
-	enemyWorldTransform_.translation_ -= ApproachSpeed;
+	//enemyWorldTransform_.translation_ -= ApproachSpeed;
 	//既定の位置に到達したら離脱
 	if (enemyWorldTransform_.translation_.x < -40.0f)
 	{
@@ -206,7 +206,7 @@ void Enemy::PhsaeApproach()
 void Enemy::PhsaeLeave()
 {
 	//移動(ベクトルを加算)
-	enemyWorldTransform_.translation_ += LeaveSpeed;
+	//enemyWorldTransform_.translation_ += LeaveSpeed;
 	if (enemyWorldTransform_.translation_.x > 40.0f)
 	{
 		phase_ = Phase::Approach;
