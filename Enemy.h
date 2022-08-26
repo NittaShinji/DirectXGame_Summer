@@ -14,6 +14,9 @@
 //自機クラスの前方宣言
 class Player;
 
+//GameSceneの前方宣言
+class GameScene;
+
 class Enemy
 {
 	
@@ -63,6 +66,8 @@ public:
 	//半径を取得
 	float GetRadius();
 
+	void SetgameScene(GameScene* gameScene) { gameScene_ = gameScene; }
+
 private:
 
 	// ワールド変換データ
@@ -77,6 +82,9 @@ private:
 	// テクスチャハンドル
 	uint32_t enemyHandle_ = 0u;
 
+	//ゲームシーン
+	GameScene* gameScene_ = nullptr;
+
 	// 敵の速度
 	const float kEnemySpeed = 0.1f;
 	
@@ -87,8 +95,7 @@ private:
 	//離脱フェーズの速度
 	Vector3 LeaveSpeed = { 0.1,0,0 };
 
-	//弾
-	std::list<std::unique_ptr<EnemyBullet>> bullets_;
+	
 	//発射タイマー
 	int32_t bulletCoolTimer = 0;
 

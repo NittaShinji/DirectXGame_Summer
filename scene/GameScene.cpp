@@ -67,6 +67,10 @@ void GameScene::Initialize() {
 
 	//敵キャラに自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
+
+	//敵キャラにゲームシーンのアドレスを渡す
+	enemy_->SetgameScene(gameScene_);
+
 	
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -309,4 +313,10 @@ void GameScene::CheckAllCollisions()
 		}
 	}
 #pragma endregion
+}
+
+void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) 
+{
+	//リストに登録する
+	enmeybullets_.push_back(std::move(enemyBullet));
 }

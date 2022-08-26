@@ -57,6 +57,9 @@ class GameScene {
 	//衝突判定と応答
 	void CheckAllCollisions();
 
+	//登録用関数
+	void AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet);
+
   private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -114,6 +117,11 @@ class GameScene {
 	std::unique_ptr<Skydome> skydome_;
 	//レールカメラの生成
 	std::shared_ptr<RailCamera> railCamera_;
+
+	//敵の弾
+	std::list<std::unique_ptr<EnemyBullet>> enmeybullets_;
+
+	GameScene* gameScene_ = nullptr;
 
 	//敵の初期座標
 	Vector3 enemyPos = { 10,0,50 };

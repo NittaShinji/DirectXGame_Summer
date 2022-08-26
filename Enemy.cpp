@@ -238,3 +238,4 @@ float Enemy::GetRadius()
 	bulletRadius = radius;
 	return bulletRadius;
 }
+
