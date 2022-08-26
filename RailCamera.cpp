@@ -82,7 +82,6 @@ void RailCamera::Update()
 
 	debugText_->SetPos(50, 230);
 	debugText_->Printf("viewProjection_.eye.z) : %f", viewProjection_.eye.z);
-
 }
 
 Matrix4 RailCamera::GetMatWorld()
