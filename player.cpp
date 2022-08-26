@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "RailCamera.h"
 #include <cassert>
 using namespace MathUtility;
 
@@ -7,7 +8,8 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 	// NULLチェック
 	assert(model);
 	assert(textureHandle);
-
+	assert(railCamera_);
+	
 	//受け取ったデータをメンバ変数に記録する
 	model_ = model;
 	textureHandle_ = textureHandle;
@@ -16,13 +18,21 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 	input_ = Input::GetInstance();
 	debugText_ = DebugText::GetInstance();
 
+	//レールカメラのワールド行列を取得
+	railWorldTransform = railCamera_->GetWorldTransform();
+
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
+	worldTransform_.translation_ = { 0,0,40 };
+	worldTransform_.parent_ = &railWorldTransform;
 
 }
 
 void Player::Update()
 {
+	//レールカメラのワールド行列を取得
+	railWorldTransform = railCamera_->GetWorldTransform();
+
 	//デスフラグの立った弾を削除
 	bullets_.remove_if([](std::unique_ptr<PlayerBullet>& bullet){
 			return bullet->IsDead();
@@ -160,10 +170,16 @@ void Player::Update()
 	//WorldMatrix(worldTransform_.matWorld_, matScale, matRot, matTrans);
 
 	//親行列と掛け算代入
-	if (worldTransform_.parent_ != nullptr)
+	/*if (worldTransform_.parent_ != nullptr)
 	{
 		worldTransform_.matWorld_ *= worldTransform_.parent_->matWorld_;
-	}
+	}*/
+
+	//レールカメラのワールド行列を取得
+	Matrix4 railCameraMatWorld = railCamera_->GetMatWorld();
+	worldTransform_.matWorld_ *= railCameraMatWorld;
+
+	//worldTransform_.matWorld_ *= 
 
 	//ワールド行列を転送
 	worldTransform_.TransferMatrix();
@@ -202,7 +218,14 @@ void Player::Attack()
 		//弾を生成し、初期化
 		//PlayerBullet* newBullet = new PlayerBullet();
 		std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerBullet>();
-		newBullet->Initialize(model_ ,worldTransform_.translation_,velocity);
+		//newBullet->Initialize(model_ ,worldTransform_.translation_,velocity);
+		 
+		//自機の平行移動成分の情報を取得
+		worldResultTransform.x = worldTransform_.matWorld_.m[3][0];
+		worldResultTransform.y = worldTransform_.matWorld_.m[3][1];
+		worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
+
+		newBullet->Initialize(model_ , worldResultTransform,velocity);
 
 		//弾を登録する
 		//bullet_.reset(newBullet);
@@ -237,7 +260,7 @@ Vector3 Player::Root(Vector3 velocity, WorldTransform worldTransform_)
 
 }
 
-Vector3 Player::GetWorldPosition()
+Vector3 Player::GetLocalPosition()
 {
 	//ワールド座標を入れる変数
 	Vector3 worldPos;

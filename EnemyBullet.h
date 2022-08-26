@@ -21,7 +21,7 @@ public:
 	void OnCollision();
 
 	//ƒ[ƒ‹ƒhÀ•W‚ğæ“¾
-	Vector3 GetWorldPosition();
+	Vector3 GetLocalPosition();
 
 	//”¼Œa‚ğæ“¾
 	float GetRadius();

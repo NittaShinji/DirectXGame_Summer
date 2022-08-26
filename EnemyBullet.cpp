@@ -105,7 +105,7 @@ void EnemyBullet::OnCollision()
 	isDead_ = true;
 }
 
-Vector3 EnemyBullet::GetWorldPosition()
+Vector3 EnemyBullet::GetLocalPosition()
 {
 	//ƒ[ƒ‹ƒhÀ•W‚ğ“ü‚ê‚é•Ï”
 	Vector3 worldPos;

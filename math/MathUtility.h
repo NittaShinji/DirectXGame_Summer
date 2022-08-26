@@ -65,3 +65,5 @@ Matrix4 operator*(const Matrix4& m1, const Matrix4& m2);
 Vector3 operator*(const Vector3& v, const Matrix4& m);
 
 } // namespace MathUtility
+
+Vector3 Transform(const Vector3& v, const Matrix4& m);

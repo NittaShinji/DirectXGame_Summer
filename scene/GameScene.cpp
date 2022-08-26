@@ -38,13 +38,21 @@ void GameScene::Initialize() {
 	//player_ = new Player();
 	////自キャラの初期化
 	//player_->Initialize(model_ ,textureHandle_);
+	
+	//レールカメラの生成
+	RailCamera* newRailCamera = new RailCamera;
+	railCamera_.reset(newRailCamera);
+	//レールカメラの初期化
+	railCamera_->Initialize(railPos, angle);
 
 	//自キャラの生成と登録
 	Player* newPlayer = new Player;
 	player_.reset(newPlayer);
+	//自キャラにレールカメラのアドレスを渡す
+	player_->SetRailCamera(railCamera_);
 	//自キャラの初期化
 	player_->Initialize(model_, textureHandle_);
-
+	
 	//敵の生成
 	Enemy* newEnemy = new Enemy();
 	enemy_.reset(newEnemy);	
@@ -105,9 +113,11 @@ void GameScene::Update()
 	player_->Update();
 	enemy_->Update();
 	skydome_->Update();
+	railCamera_->Update();
 
-	viewProjection_ = debugCamera_->GetViewProjection();
-
+	//viewProjection_ = debugCamera_->GetViewProjection();
+	viewProjection_ = railCamera_->GetViewProjection();
+	
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
 
@@ -219,14 +229,14 @@ void GameScene::CheckAllCollisions()
 
 #pragma region 自キャラと敵弾の当たり判定
 	//自キャラの座標
-	posA = player_->GetWorldPosition();
+	posA = player_->GetLocalPosition();
 	//自キャラの半径
 	radiusA = player_->GetRadius();
 	//自キャラと敵弾すべての当たり判定
 	for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
 	{
 		//敵弾の座標
-		posB = enemyBullet->GetWorldPosition();
+		posB = enemyBullet->GetLocalPosition();
 		//敵弾の半径
 		radiusB = enemyBullet->GetRadius();
 		//座標AとBの距離を求める
@@ -245,7 +255,7 @@ void GameScene::CheckAllCollisions()
 
 #pragma region 自弾と敵キャラの当たり判定
 	//敵キャラの座標
-	posA = enemy_->GetWorldPosition();
+	posA = enemy_->GetLocalPosition();
 	//敵キャラの半径
 	radiusA = enemy_->GetRadius();
 
@@ -253,7 +263,7 @@ void GameScene::CheckAllCollisions()
 	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
 	{
 		//自弾の座標
-		posB = playerBullet->GetWorldPosition();
+		posB = playerBullet->GetLocalPosition();
 		//敵弾の半径
 		radiusB = playerBullet->GetRadius();
 		//座標AとBの距離を求める
@@ -275,14 +285,14 @@ void GameScene::CheckAllCollisions()
 	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
 	{
 		//自弾の座標
-		posB = playerBullet->GetWorldPosition();
+		posB = playerBullet->GetLocalPosition();
 		//敵弾の半径
 		radiusB = playerBullet->GetRadius();
 
 		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
 		{
 			//敵弾の座標
-			posB = enemyBullet->GetWorldPosition();
+			posB = enemyBullet->GetLocalPosition();
 			//敵弾の半径
 			radiusB = enemyBullet->GetRadius();
 			//座標AとBの距離を求める

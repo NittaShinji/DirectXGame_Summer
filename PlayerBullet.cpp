@@ -14,6 +14,8 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	// NULLチェック
 	assert(model);
 
+	debugText_ = DebugText::GetInstance();
+
 	bulletModel_ = model;
 	//テクスチャ読み込み
 	bulletHandle_ = TextureManager::Load("bullet.png");
@@ -25,7 +27,7 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	bulletWorldTransform_.Initialize();
 
 	//引数で受け取った初期座標をセット
-	bulletWorldTransform_.translation_ = position;
+	bulletWorldTransform_.translation_= position;
 	
 }
 
@@ -86,6 +88,10 @@ void PlayerBullet::Update()
 	{
 		isDead_ = true;
 	}
+
+	debugText_->SetPos(50, 400);
+	debugText_->Printf("translation_.z) : %f", bulletWorldTransform_.translation_.z);
+
 }
 
 void PlayerBullet::Draw(const ViewProjection& viewProjection)
@@ -108,7 +114,7 @@ float PlayerBullet::GetRadius()
 	return bulletRadius;
 }
 
-Vector3 PlayerBullet::GetWorldPosition()
+Vector3 PlayerBullet::GetLocalPosition()
 {
 	//ワールド座標を入れる変数
 	Vector3 worldPos;

@@ -13,6 +13,9 @@
 /// <summary>
 /// 自キャラ
 /// </summary>
+
+class RailCamera;
+
 class Player
 {
 public:
@@ -38,8 +41,10 @@ public:
 	/// </summary>
 	void Draw(ViewProjection& viewProjection, uint32_t textureHandle);
 
-	//ワールド座標を取得
-	Vector3 GetWorldPosition();
+	//ローカル座標を取得
+	Vector3 GetLocalPosition();
+	////ワールド座標を取得
+	//Vector3 GetWorldPosition();
 
 	//半径を取得
 	float GetRadius();
@@ -50,9 +55,14 @@ public:
 	//弾リストを取得
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() { return bullets_; }
 
+	//カメラのワールド行列(ポインタ)を渡すためのSetter
+	void SetRailCamera(std::shared_ptr<RailCamera> railCamera) { railCamera_ = railCamera; }
+
 private:
 	// ワールド変換データ
 	WorldTransform worldTransform_;
+	//レールカメラのワールド行列を取得
+	WorldTransform railWorldTransform;
 	// モデル
 	Model* model_ = nullptr;
 	// インプット
@@ -65,4 +75,8 @@ private:
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
 	//半径
 	const float radius = 0.5f;
+	//自キャラ
+	std::shared_ptr<RailCamera> railCamera_;
+	//ワールド座標計算用の変数
+	Vector3 worldResultTransform;
 };

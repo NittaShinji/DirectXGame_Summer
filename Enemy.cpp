@@ -119,7 +119,7 @@ void Enemy::Update()
 
 }
 
-Vector3 Enemy::GetWorldPosition()
+Vector3 Enemy::GetLocalPosition()
 {
 	//ワールド座標を入れる変数
 	Vector3 worldPos;
@@ -137,7 +137,7 @@ void Enemy::Fire()
 	Vector3 velocity(kBulletSpeed, 0, 0);
 
 	//自機のワールド座標を取得
-	Vector3 playerPos = player_->GetWorldPosition();
+	Vector3 playerPos = player_->GetLocalPosition();
 	//敵のワールド座標を取得
 	Vector3 enemyPos = enemyWorldTransform_.translation_;
 

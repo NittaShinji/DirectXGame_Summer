@@ -58,7 +58,7 @@ public:
 	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() { return bullets_; }
 
 	//ƒ[ƒ‹ƒhÀ•W‚ğæ“¾
-	Vector3 GetWorldPosition();
+	Vector3 GetLocalPosition();
 
 	//”¼Œa‚ğæ“¾
 	float GetRadius();

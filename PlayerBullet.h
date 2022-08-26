@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.h"
+#include "Debugtext.h"
 
 //自キャラの弾
 class PlayerBullet
@@ -25,7 +26,7 @@ public:
 	float GetRadius();
 
 	//ワールド座標を取得
-	Vector3 GetWorldPosition();
+	Vector3 GetLocalPosition();
 
 private:
 
@@ -50,6 +51,9 @@ private:
 
 	//半径
 	const float radius = 0.5f;
+
+	// デバックテキスト
+	DebugText* debugText_ = nullptr;
 
 };
 

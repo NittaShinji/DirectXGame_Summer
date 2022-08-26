@@ -12,6 +12,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "Skydome.h"
+#include "RailCamera.h"
 
 /// <summary>
 /// ゲームシーン
@@ -102,15 +103,26 @@ class GameScene {
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
 
+	//ビューフラグ
+	bool viewChange = 0;
+
 	//プレイヤーの生成
 	std::shared_ptr<Player> player_;
 	//敵の生成
 	std::unique_ptr<Enemy> enemy_;
 	//天球の生成
 	std::unique_ptr<Skydome> skydome_;
+	//レールカメラの生成
+	std::shared_ptr<RailCamera> railCamera_;
 
 	//敵の初期座標
 	Vector3 enemyPos = { 10,0,50 };
+
+	//レールカメラの初期座標
+	Vector3 railPos = { 0,0,0 };
+
+	//レールカメラの初期座標
+	Vector3 angle = { 0,0,0 };
 
 	//AB間の距離
 	Vector3 distance;
