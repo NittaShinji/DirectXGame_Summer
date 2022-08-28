@@ -19,7 +19,7 @@ void Enemy::Initialize(Model* model, const Vector3& position)
 	enemyModel_ = model;
 
 	//テクスチャ読み込み
-	enemyHandle_ = TextureManager::Load("suraimu.png");
+	enemyHandle_ = TextureManager::Load("mario.jpg");
 
 	////引数で受け取った速度をメンバ変数に代入
 	//enemyVelocity_ = velocity;

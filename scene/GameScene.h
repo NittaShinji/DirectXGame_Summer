@@ -13,6 +13,7 @@
 #include "Enemy.h"
 #include "Skydome.h"
 #include "RailCamera.h"
+#include "Monster.h"
 
 /// <summary>
 /// ゲームシーン
@@ -115,8 +116,14 @@ class GameScene {
 	//レールカメラの生成
 	//std::shared_ptr<RailCamera> railCamera_;
 
+	std::unique_ptr<Monster> monster_;
+	//Monster* monster_;
+
 	//敵の初期座標
 	Vector3 enemyPos = { 10,0,40 };
+
+	//モンスターの初期座標
+	Vector3 monsterPos = { 0,0,0 };
 
 	//レールカメラの初期座標
 	Vector3 railPos = { 0,0,0 };

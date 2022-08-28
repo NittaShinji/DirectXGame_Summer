@@ -65,6 +65,15 @@ void GameScene::Initialize() {
 	//天球の初期化
 	skydome_->Initialize(modelSkydome_);
 
+	//モンスターの生成
+	Monster* newMonster = new Monster();
+	monster_.reset(newMonster);
+
+	//monster_ = new Monster;
+
+	//モンスターの初期化
+	monster_->Initialize(model_, monsterPos);
+
 	//敵キャラに自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
 	
@@ -108,11 +117,13 @@ void GameScene::Update()
 {
 	assert(player_);
 	assert(enemy_);
+	assert(monster_);
 
 	debugCamera_->Update();
 	player_->Update();
 	enemy_->Update();
 	skydome_->Update();
+	monster_->Update();
 	//railCamera_->Update();
 
 	viewProjection_ = debugCamera_->GetViewProjection();
@@ -190,6 +201,7 @@ void GameScene::Draw() {
 	player_->Draw(viewProjection_,textureHandle_);
 	enemy_->Draw(viewProjection_);
 	skydome_->Draw(viewProjection_);
+	monster_->Draw(viewProjection_);
 
 	/// </summary>
 
