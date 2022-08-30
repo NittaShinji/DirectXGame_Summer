@@ -69,7 +69,7 @@ void Player::Update()
 	// キャラクターの移動ベクトル
 	Vector3 playerMove = { 0,0,0 };
 
-	if (input_->PushKey(DIK_RIGHT))
+	/*if (input_->PushKey(DIK_RIGHT))
 	{
 		playerMove.x = playerSpeed;
 	}
@@ -93,7 +93,7 @@ void Player::Update()
 	else
 	{
 		playerMove.y = 0.0f;
-	}
+	}*/
 
 	worldTransform_.translation_.x += playerMove.x;
 	worldTransform_.translation_.y += playerMove.y;
@@ -117,7 +117,7 @@ void Player::Update()
 #pragma region キャラクターの攻撃
 
 	//キャラクターの攻撃
-	Attack();
+	//Attack();
 
 	//弾更新
 	for (std::unique_ptr<PlayerBullet>& bullet : bullets_)

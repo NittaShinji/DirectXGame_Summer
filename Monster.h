@@ -13,7 +13,8 @@ public:
 	enum class Form
 	{
 		Block = 0,		//生まれていない状態
-		Slime,		//スライム
+		IsSelected,		//選択されている状態
+		Slime,			//スライム
 	};
 
 	//行動フェーズ
@@ -35,8 +36,8 @@ public:
 
 private:
 
-	static const int blockWidth = 10;
-	static const int blockHeight = 10;
+	static const int blockWidth = 30;
+	static const int blockHeight = 30;
 
 	// ワールド変換データ
 	//WorldTransform worldTransforms_[blockWidth][blockHeight];
@@ -51,13 +52,34 @@ private:
 
 	// テクスチャハンドル
 	uint32_t blockHandle_ = 0u;
+	uint32_t selectHandle_ = 0u;
 	uint32_t slimeHandle_ = 0u;
 
 	//状態変化変数
 	Form form_[blockWidth][blockHeight] = { Form::Block };
 	//Form form_ = { Form::Block };
 
+	//キャラクターの大きさ
+	float scaleX = 8.0f;
+	float scaleY = 8.0f;
+	float scaleZ = 8.0f;
 
+	int prevBlockX;
+	int prevBlockY;
+
+	//選択可能かどうかの変数
+	bool changedSelect;
+
+	//選択カーソルのクールタイマーの設定時間
+	static const int32_t kSelectTime = 17;
+
+	//選択カーソルのクールタイマー
+	int32_t selectTimer_ = kSelectTime;
+
+	//int selectTimer;
+
+	//ブロックが選択されているか
+	//int isSelected[blockWidth][blockHeight] = { 0 };
 
 	////個々のブロック用の状態変化変数
 	//int formChange[blockWidth][blockHeight] = { 0 };

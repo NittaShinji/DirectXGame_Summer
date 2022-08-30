@@ -15,6 +15,7 @@ void Monster::Initialize(Model* model, const Vector3& position)
 
 	//テクスチャ読み込み
 	blockHandle_ = TextureManager::Load("testBlock.png");
+	selectHandle_ = TextureManager::Load("testBlock2.png");
 	slimeHandle_ = TextureManager::Load("suraimu.png");
 
 	////引数で受け取った速度をメンバ変数に代入
@@ -32,13 +33,32 @@ void Monster::Initialize(Model* model, const Vector3& position)
 			//引数で受け取った初期座標をセット
 			worldTransforms_[i][j].translation_ = position;
 
-			if (i > 1)
+			//カーソルの初期値を設定
+			if (i == 0 && j == 0)
 			{
-				worldTransforms_[i][j].translation_.x += i * 2.0;
+				form_[i][j] = Form::IsSelected;
 			}
+
+			//form_[i][j] = Form::IsSelected;
+
+			if (i > 0)
+			{
+				worldTransforms_[i][j].translation_.x += i * (scaleX * 2);
+				//if()
+			}
+			if (j > 0)
+			{
+				//if() 
+				worldTransforms_[i][j].translation_.z += j * (scaleZ * 2);
+			}
+
 		}
 	}
+
+	changedSelect = true;
+	prevBlockX = 0;
 }
+
 //更新
 void Monster::Update()
 {
@@ -46,6 +66,54 @@ void Monster::Update()
 	{
 		for (int j = 0; j < blockHeight; j++)
 		{
+			if (input_->PushKey(DIK_RIGHT) && i < blockWidth && changedSelect == true)
+			{
+				if (form_[i][j] == Form::IsSelected)
+				{
+					form_[i][j] = Form::Block;
+					form_[i + 1][j] = Form::IsSelected;
+					changedSelect = false;
+				}
+			}
+			else if (input_->PushKey(DIK_LEFT) && i > 0 && changedSelect == true)
+			{
+				if (form_[i][j] == Form::IsSelected)
+				{
+					form_[i][j] = Form::Block;
+					//form_[i - 1][j] = Form::IsSelected;
+					form_[prevBlockX][j] = Form::IsSelected;
+
+					changedSelect = false;
+				}
+			}
+			else if (input_->PushKey(DIK_UP) && j < blockHeight && changedSelect == true)
+			{
+				if (form_[i][j] == Form::IsSelected)
+				{
+					form_[i][j] = Form::Block;
+					form_[i][j + 1] = Form::IsSelected;
+					changedSelect = false;
+				}
+			}
+			else if (input_->PushKey(DIK_DOWN) && j > 0 && changedSelect == true)
+			{
+				if (form_[i][j] == Form::IsSelected)
+				{
+					form_[i][j] = Form::Block;
+					form_[i][prevBlockY] = Form::IsSelected;
+					changedSelect = false;
+				}
+			}
+			else
+			{
+
+			}
+
+			if (input_->PushKey(DIK_SPACE) && form_[i][j] == Form::IsSelected)
+			{
+				form_[i][j] = Form::Slime;
+				form_[i + 1][j] = Form::IsSelected;
+			}
 
 			if (input_->PushKey(DIK_1))
 			{
@@ -54,7 +122,7 @@ void Monster::Update()
 					form_[i][j] = Form::Slime;
 				}
 			}
-			
+
 #pragma region 行列の更新
 			//スケーリング用行列を宣言
 			Matrix4 matScale;
@@ -64,11 +132,6 @@ void Monster::Update()
 			Matrix4 matRotX, matRotY, matRotZ;
 			//座標用行列を宣言
 			Matrix4 matTrans = MathUtility::Matrix4Identity();
-
-			//キャラクター移動処理
-			float scaleX = 1.0f;
-			float scaleY = 1.0f;
-			float scaleZ = 1.0f;
 
 			//スケーリング倍率を行列に設定
 			matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);
@@ -109,9 +172,22 @@ void Monster::Update()
 
 
 #pragma endregion
+
+			//X座標の一つ前の番号を保存
+			prevBlockY = j;
 		}
+		//Y座標の一つ前のブロック番号を保存
+		prevBlockX = i;
 	}
 
+	if (changedSelect == false)
+	{
+		if (--selectTimer_ <= 0)
+		{
+			changedSelect = true;
+			selectTimer_ = kSelectTime;
+		}
+	}
 }
 //描画
 void Monster::Draw(const ViewProjection& viewProjection)
@@ -123,9 +199,14 @@ void Monster::Draw(const ViewProjection& viewProjection)
 			switch (form_[i][j])
 			{
 			case Form::Block:
-			
+
 				model_->Draw(worldTransforms_[i][j], viewProjection, blockHandle_);
-				
+
+				break;
+
+			case Form::IsSelected:
+
+				model_->Draw(worldTransforms_[i][j], viewProjection, selectHandle_);
 				break;
 
 			case Form::Slime:

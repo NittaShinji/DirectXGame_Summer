@@ -146,6 +146,7 @@
     <ClInclude Include="PlayerBullet.h" />
     <ClInclude Include="RailCamera.h" />
     <ClInclude Include="scene\GameScene.h" />
+    <ClInclude Include="Select.h" />
     <ClInclude Include="Skydome.h" />
   </ItemGroup>
   <ItemGroup>
