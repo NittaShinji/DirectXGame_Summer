@@ -65,17 +65,26 @@ void GameScene::Initialize() {
 	//天球の初期化
 	skydome_->Initialize(modelSkydome_);
 
-	//モンスターの生成
-	Monster* newMonster = new Monster();
-	monster_.reset(newMonster);
+	//ブロックの生成
+	Block* newBlock = new Block();
+	block_.reset(newBlock);
+	//ブロックの初期化
+	block_->Initialize(model_, monsterPos);
 
+
+	//カーソルの生成
+	Select* newSelect = new Select;
+	select_.reset(newSelect);
+	select_->Initialize(model_);
+	
 	//monster_ = new Monster;
 
-	//モンスターの初期化
-	monster_->Initialize(model_, monsterPos);
-
+	
 	//敵キャラに自キャラのアドレスを渡す
 	enemy_->SetPlayer(player_);
+	//カーソルにブロックのアドレスを渡す
+	select_->SetBlock(block_);
+
 	
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -117,13 +126,14 @@ void GameScene::Update()
 {
 	assert(player_);
 	assert(enemy_);
-	assert(monster_);
+	assert(block_);
 
 	debugCamera_->Update();
 	player_->Update();
 	enemy_->Update();
 	skydome_->Update();
-	monster_->Update();
+	block_->Update();
+	select_->Update();
 	//railCamera_->Update();
 
 	viewProjection_ = debugCamera_->GetViewProjection();
@@ -198,10 +208,12 @@ void GameScene::Draw() {
 
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
+	
 	player_->Draw(viewProjection_,textureHandle_);
 	enemy_->Draw(viewProjection_);
 	skydome_->Draw(viewProjection_);
-	monster_->Draw(viewProjection_);
+	block_->Draw(viewProjection_);
+	select_->Draw(viewProjection_);
 
 	/// </summary>
 

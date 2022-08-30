@@ -13,7 +13,8 @@
 #include "Enemy.h"
 #include "Skydome.h"
 #include "RailCamera.h"
-#include "Monster.h"
+#include "Block.h"
+#include "Select.h"
 
 /// <summary>
 /// ゲームシーン
@@ -116,7 +117,11 @@ class GameScene {
 	//レールカメラの生成
 	//std::shared_ptr<RailCamera> railCamera_;
 
-	std::unique_ptr<Monster> monster_;
+	std::shared_ptr<Block> block_;
+
+	//カーソルの生成
+	std::unique_ptr<Select> select_;
+
 	//Monster* monster_;
 
 	//敵の初期座標

@@ -5,7 +5,8 @@
 #include "Input.h"
 #include "Debugtext.h"
 
-class Monster
+
+class Block
 {
 public:
 
@@ -13,7 +14,9 @@ public:
 	enum class Form
 	{
 		Block = 0,		//生まれていない状態
-		IsSelected,		//選択されている状態
+		IsSelected,		//選択されている状態(ブロック状態のまま)
+		WasSelected,	//選択された状態	(ブロックがない状態)
+		None,			//何もない状態
 		Slime,			//スライム
 	};
 
@@ -24,8 +27,8 @@ public:
 		Leave,		//離脱する
 	};
 
-	Monster();
-	~Monster();
+	Block();
+	~Block();
 
 	//初期化
 	void Initialize(Model* model, const Vector3& position);
@@ -33,6 +36,9 @@ public:
 	void Update();
 	//描画
 	void Draw(const ViewProjection& viewProjection);
+
+	//ワールド座標を取得
+	Vector3 GetLocalPosition();
 
 private:
 
@@ -53,6 +59,7 @@ private:
 	// テクスチャハンドル
 	uint32_t blockHandle_ = 0u;
 	uint32_t selectHandle_ = 0u;
+	uint32_t wasSelectHandle_ = 0u;
 	uint32_t slimeHandle_ = 0u;
 
 	//状態変化変数
@@ -69,12 +76,15 @@ private:
 
 	//選択可能かどうかの変数
 	bool changedSelect;
+	bool wasChangedSelect;
 
 	//選択カーソルのクールタイマーの設定時間
 	static const int32_t kSelectTime = 17;
 
 	//選択カーソルのクールタイマー
 	int32_t selectTimer_ = kSelectTime;
+	int32_t wasSelectTimer_ = kSelectTime;
+
 
 	//int selectTimer;
 

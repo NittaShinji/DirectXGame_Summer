@@ -1,11 +1,11 @@
-#include "Monster.h"
+#include "Block.h"
 #include <cassert>
 
-Monster::Monster() {}
-Monster::~Monster() {}
+Block::Block() {}
+Block::~Block() {}
 
 //初期化
-void Monster::Initialize(Model* model, const Vector3& position)
+void Block::Initialize(Model* model, const Vector3& position)
 {
 	// NULLチェック
 	assert(model);
@@ -16,6 +16,7 @@ void Monster::Initialize(Model* model, const Vector3& position)
 	//テクスチャ読み込み
 	blockHandle_ = TextureManager::Load("testBlock.png");
 	selectHandle_ = TextureManager::Load("testBlock2.png");
+	wasSelectHandle_ = TextureManager::Load("testBlock3.png");
 	slimeHandle_ = TextureManager::Load("suraimu.png");
 
 	////引数で受け取った速度をメンバ変数に代入
@@ -34,7 +35,7 @@ void Monster::Initialize(Model* model, const Vector3& position)
 			worldTransforms_[i][j].translation_ = position;
 
 			//カーソルの初期値を設定
-			if (i == 0 && j == 0)
+			if (i == 1 && j == 1)
 			{
 				form_[i][j] = Form::IsSelected;
 			}
@@ -55,12 +56,13 @@ void Monster::Initialize(Model* model, const Vector3& position)
 		}
 	}
 
+	wasChangedSelect = true;
 	changedSelect = true;
 	prevBlockX = 0;
 }
 
 //更新
-void Monster::Update()
+void Block::Update()
 {
 	for (int i = 0; i < blockWidth; i++)
 	{
@@ -68,27 +70,93 @@ void Monster::Update()
 		{
 			if (input_->PushKey(DIK_RIGHT) && i < blockWidth && changedSelect == true)
 			{
+				//前カーソルの状態からカーソル状態をなくして、カーソルがつく前の状態にする。
 				if (form_[i][j] == Form::IsSelected)
 				{
+					//ブロック
 					form_[i][j] = Form::Block;
-					form_[i + 1][j] = Form::IsSelected;
-					changedSelect = false;
+					if (form_[i + 1][j] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[i + 1][j] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[i + 1][j] == Form::None)
+					{
+						//空間カーソル
+						form_[i + 1][j] = Form::WasSelected;
+						changedSelect = false;
+					}
+
+				}
+				else if (form_[i][j] == Form::WasSelected)
+				{
+					//空間
+					form_[i][j] = Form::None;
+					if (form_[i + 1][j] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[i + 1][j] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[i + 1][j] == Form::None)
+					{
+						//空間カーソル
+						form_[i + 1][j] = Form::WasSelected;
+						changedSelect = false;
+					}
 				}
 			}
 			else if (input_->PushKey(DIK_LEFT) && i > 0 && changedSelect == true)
 			{
+				//if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
+				//{
+				//	form_[i][j] = Form::Block;
+				//	//form_[i - 1][j] = Form::IsSelected;
+				//	form_[prevBlockX][j] = Form::IsSelected;
+
+				//	changedSelect = false;
+				//}
+
+				//前カーソルの状態からカーソル状態をなくして、カーソルがつく前の状態にする。
 				if (form_[i][j] == Form::IsSelected)
 				{
+					//ブロック
 					form_[i][j] = Form::Block;
-					//form_[i - 1][j] = Form::IsSelected;
-					form_[prevBlockX][j] = Form::IsSelected;
-
-					changedSelect = false;
+					if (form_[prevBlockX][j] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[prevBlockX][j] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[prevBlockX][j] == Form::None)
+					{
+						//空間カーソル
+						form_[prevBlockX][j] = Form::WasSelected;
+						changedSelect = false;
+					}
+				}
+				else if (form_[i][j] == Form::WasSelected)
+				{
+					//空間
+					form_[i][j] = Form::None;
+					if (form_[prevBlockX][j] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[prevBlockX][j] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[prevBlockX][j] == Form::None)
+					{
+						//空間カーソル
+						form_[prevBlockX][j] = Form::WasSelected;
+						changedSelect = false;
+					}
 				}
 			}
 			else if (input_->PushKey(DIK_UP) && j < blockHeight && changedSelect == true)
 			{
-				if (form_[i][j] == Form::IsSelected)
+				if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
 				{
 					form_[i][j] = Form::Block;
 					form_[i][j + 1] = Form::IsSelected;
@@ -97,7 +165,7 @@ void Monster::Update()
 			}
 			else if (input_->PushKey(DIK_DOWN) && j > 0 && changedSelect == true)
 			{
-				if (form_[i][j] == Form::IsSelected)
+				if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
 				{
 					form_[i][j] = Form::Block;
 					form_[i][prevBlockY] = Form::IsSelected;
@@ -109,17 +177,20 @@ void Monster::Update()
 
 			}
 
-			if (input_->PushKey(DIK_SPACE) && form_[i][j] == Form::IsSelected)
+			if (input_->PushKey(DIK_SPACE) && form_[i][j] == Form::IsSelected && wasChangedSelect == true)
 			{
-				form_[i][j] = Form::Slime;
-				form_[i + 1][j] = Form::IsSelected;
+				form_[i][j] = Form::WasSelected;
+				wasChangedSelect = false;
 			}
 
 			if (input_->PushKey(DIK_1))
 			{
-				if (i == 0 && j == 0)
+				if (j == 0)
 				{
-					form_[i][j] = Form::Slime;
+					if (i > 2 && i < 5)
+					{
+						form_[i][j] = Form::None;
+					}
 				}
 			}
 
@@ -188,9 +259,18 @@ void Monster::Update()
 			selectTimer_ = kSelectTime;
 		}
 	}
+
+	if (wasChangedSelect == false)
+	{
+		if (--wasSelectTimer_ <= 0)
+		{
+			wasChangedSelect = true;
+			wasSelectTimer_ = kSelectTime;
+		}
+	}
 }
 //描画
-void Monster::Draw(const ViewProjection& viewProjection)
+void Block::Draw(const ViewProjection& viewProjection)
 {
 	for (int i = 0; i < blockWidth; i++)
 	{
@@ -198,6 +278,12 @@ void Monster::Draw(const ViewProjection& viewProjection)
 		{
 			switch (form_[i][j])
 			{
+
+			case Form::WasSelected:
+
+				//model_->Draw(worldTransforms_[i][j], viewProjection, wasSelectHandle_);
+				break;
+
 			case Form::Block:
 
 				model_->Draw(worldTransforms_[i][j], viewProjection, blockHandle_);
@@ -208,11 +294,12 @@ void Monster::Draw(const ViewProjection& viewProjection)
 
 				model_->Draw(worldTransforms_[i][j], viewProjection, selectHandle_);
 				break;
-
 			case Form::Slime:
 
 				model_->Draw(worldTransforms_[i][j], viewProjection, slimeHandle_);
 
+				break;
+			case Form::None:
 				break;
 
 			default:
@@ -220,4 +307,25 @@ void Monster::Draw(const ViewProjection& viewProjection)
 			}
 		}
 	}
+}
+
+Vector3 Block::GetLocalPosition()
+{
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+
+	//現在カーソルがある位置を渡す
+	for (int i = 0; i < blockWidth; i++)
+	{
+		for (int j = 0; j < blockHeight; j++)
+		{
+			if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
+			{
+				//ワールド行列の平行移動成分を取得(ワールド座標)
+				worldPos = worldTransforms_[i][j].translation_;
+			}
+		}
+	}	
+
+	return worldPos;
 }
