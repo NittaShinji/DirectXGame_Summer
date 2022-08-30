@@ -156,20 +156,91 @@ void Block::Update()
 			}
 			else if (input_->PushKey(DIK_UP) && j < blockHeight && changedSelect == true)
 			{
-				if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
+				//前カーソルの状態からカーソル状態をなくして、カーソルがつく前の状態にする。
+				if (form_[i][j] == Form::IsSelected)
+				{
+					//ブロック
+					form_[i][j] = Form::Block;
+
+					if (form_[i][j + 1] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[i][j + 1] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[i][j + 1] == Form::None)
+					{
+						//空間カーソル
+						form_[i][j + 1] = Form::WasSelected;
+						changedSelect = false;
+					}
+
+				}
+				else if (form_[i][j] == Form::WasSelected)
+				{
+					//空間
+					form_[i][j] = Form::None;
+
+					if (form_[i][j + 1] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[i][j + 1] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[i][j + 1] == Form::None)
+					{
+						//空間カーソル
+						form_[i][j + 1] = Form::WasSelected;
+						changedSelect = false;
+					}
+
+				}
+
+				/*if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
 				{
 					form_[i][j] = Form::Block;
 					form_[i][j + 1] = Form::IsSelected;
 					changedSelect = false;
-				}
+				}*/
 			}
 			else if (input_->PushKey(DIK_DOWN) && j > 0 && changedSelect == true)
 			{
-				if (form_[i][j] == Form::IsSelected || form_[i][j] == Form::WasSelected)
+				if (form_[i][j] == Form::IsSelected)
 				{
+					//ブロック
 					form_[i][j] = Form::Block;
-					form_[i][prevBlockY] = Form::IsSelected;
-					changedSelect = false;
+
+					if (form_[i][prevBlockY] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[i][prevBlockY] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[i][prevBlockY] == Form::None)
+					{
+						//空間カーソル
+						form_[i][prevBlockY] = Form::WasSelected;
+						changedSelect = false;
+					}
+				}
+				else if (form_[i][j] == Form::WasSelected)
+				{
+					//空間
+					form_[i][j] = Form::None;
+
+					if (form_[i][prevBlockY] == Form::Block)
+					{
+						//ブロックカーソル
+						form_[i][prevBlockY] = Form::IsSelected;
+						changedSelect = false;
+					}
+					else if (form_[i][prevBlockY] == Form::None)
+					{
+						//空間カーソル
+						form_[i][prevBlockY] = Form::WasSelected;
+						changedSelect = false;
+					}
+
 				}
 			}
 			else
@@ -185,7 +256,7 @@ void Block::Update()
 
 			if (input_->PushKey(DIK_1))
 			{
-				if (j == 0)
+				if (j > 1 && j < 4)
 				{
 					if (i > 2 && i < 5)
 					{
