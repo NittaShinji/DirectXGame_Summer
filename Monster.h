@@ -91,6 +91,8 @@ public:
 
 	bool IsDead() const { return isDead_; }
 
+	void GetIsMove(bool possibleMove);
+
 private:
 
 	// ワールド変換データ
@@ -106,7 +108,7 @@ private:
 	uint32_t monsterHandle_ = 0u;
 
 	// 敵の速度
-	const float kEnemySpeed = 0.1f;
+	const float kEnemySpeed = 0.3f;
 	
 	//フェーズ
 	Phase phase_ = Phase::Approach;
@@ -131,7 +133,7 @@ private:
 	//std::shared_ptr<Block> block_;
 
 	//半径
-	const float radius = 0.5f;
+	const float radius = 32.0f;
 
 	//モンスターの生成座標
 	//Vector3 boxPos;
@@ -148,7 +150,7 @@ private:
 	bool isDead_ = false;
 
 	//動いていいよフラグ
-	bool isMoved = false;
+	bool isMoved;
 
 	//初期移動フラグ
 	bool firstMove = true;

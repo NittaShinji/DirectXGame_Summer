@@ -274,9 +274,9 @@ void Block::Update()
 
 			if (input_->PushKey(DIK_1))
 			{
-				if (j > 1 && j < 4)
+				if (j > 0 && j < 3)
 				{
-					if (i > 2 && i < 5)
+					if (i > 0 && i < 3)
 					{
 						form_[i][j] = Form::None;
 					}
@@ -529,10 +529,29 @@ Vector3 Block::GetSelectPosition()
 }
 
 //モンスターの当たり判定用に壁の座標を渡す関数
-Vector3 Block::GetBlockPosition()
+//Vector3 Block::GetBlockPosition()
+//{
+//	//ローカル座標を入れる変数
+//	Vector3 monsterPos[blockWidth][blockHeight];
+//
+//	//全ての壁の座標を渡す
+//	for (int i = 0; i < blockWidth; i++)
+//	{
+//		for (int j = 0; j < blockHeight; j++)
+//		{
+//			//ワールド行列の平行移動成分を取得(ワールド座標)
+//			monsterPos[i][j] = worldTransforms_[i][j].translation_;
+//			return monsterPos[i][j];
+//		}
+//	}
+//	
+//}
+
+void Block::GetLocalPosition(Vector3 blockPos[blockWidth][blockHeight])
 {
-	//ローカル座標を入れる変数
-	Vector3 monsterPos[blockWidth][blockHeight];
+	/*Vector3 monsterPos[blockWidth][blockHeight];*/
+
+	Vector3 givePos;
 
 	//全ての壁の座標を渡す
 	for (int i = 0; i < blockWidth; i++)
@@ -540,26 +559,11 @@ Vector3 Block::GetBlockPosition()
 		for (int j = 0; j < blockHeight; j++)
 		{
 			//ワールド行列の平行移動成分を取得(ワールド座標)
-			monsterPos[i][j] = worldTransforms_[i][j].translation_;
-		}
-	}
-}
-
-void Block::GetLocalPosition(Vector3 blockPos)
-{
-	Vector3 monsterPos[blockWidth][blockHeight];
-
-	//全ての壁の座標を渡す
-	for (int i = 0; i < blockWidth; i++)
-	{
-		for (int j = 0; j < blockHeight; j++)
-		{
-			//ワールド行列の平行移動成分を取得(ワールド座標)
-			monsterPos[i][j] = worldTransforms_[i][j].translation_;
+			blockPos[i][j] = worldTransforms_[i][j].translation_;
 		}
 	}
 
-	blockPos = monsterPos;
+	//blockPos = monsterPos;
 }
 
 bool Block::GetBirthMonster()
@@ -592,7 +596,7 @@ void Block::Birth()
 	//		}
 	//	}
 	//}
-	
+
 	////自機の平行移動成分の情報を取得
 	//worldMonsterTransform.x = worldTransform_.matWorld_.m[3][0];
 	//worldMonsterTransform.y = worldTransform_.matWorld_.m[3][1];
@@ -605,15 +609,14 @@ void Block::Birth()
 	monsters_.push_back(std::move(newMonster));
 }
 
-bool Block::OnCollision(Vector3 wallPos)
+//bool Block::OnCollision(Vector3 wallPos[blockWidth][blockHeight],const int x, const int y)
+bool Block::OnCollision(const int x, const int y)
 {
-	collisionPos = wallPos;
-
 	for (int i = 0; i < blockWidth; i++)
 	{
 		for (int j = 0; j < blockHeight; j++)
 		{
-			if (worldTransforms_[i][j].translation_.x == collisionPos.x)
+			/*if (worldTransforms_[i][j].translation_.x == collisionPos.x)
 			{
 				if (worldTransforms_[i][j].translation_.y == collisionPos.y)
 				{
@@ -621,14 +624,27 @@ bool Block::OnCollision(Vector3 wallPos)
 					{
 						if (form_[i][j] == Form::WasSelected || form_[i][j] == Form::None)
 						{
-							return true;
+							result = true;
+							return result;
 						}
 						else if(form_[i][j] == Form::Block || form_[i][j] == Form::IsSelected)
 						{
-							return false;
+							result = false;
+							return result;
 						}
 					}
 				}
+			}*/
+
+			//進める
+			if (form_[x][y] == Form::WasSelected || form_[x][y] == Form::None)
+			{
+				return true;
+			}
+			//進めない
+			else if (form_[x][y] == Form::Block || form_[x][y] == Form::IsSelected)
+			{
+				return false;
 			}
 		}
 	}

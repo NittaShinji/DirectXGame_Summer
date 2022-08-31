@@ -46,15 +46,19 @@ public:
 	//ワールド座標を取得
 	Vector3 GetSelectPosition();
 
-	void GetLocalPosition(Vector3 blockPos[]);
+	void GetLocalPosition(Vector3 blockPos[blockWidth][blockHeight]);
 
 	//モンスター出現用に座標を渡す関数
-	Vector3 GetBlockPosition();
+	//Vector3 GetBlockPosition();
+
+
 	//モンスターを出現させてもいいかどうか教えるフラグ関数
 	bool GetBirthMonster();
 
 	// 衝突を検知したら呼び出されるコールバック関数
-	bool OnCollision(Vector3 wallPos);
+	//bool OnCollision(Vector3 wallPos[blockWidth][blockHeight],const int x,const int y);
+	bool OnCollision(const int x,const int y);
+
 
 	//モンスターリストを取得
 	const std::list<std::unique_ptr<Monster>>& GetMonsters() { return monsters_; }
@@ -151,9 +155,7 @@ private:
 	Vector3 collisionPos;
 
 	//半径
-	const float radius = 0.5f;
-
-
+	const float radius = 16.0f;
 
 };
 

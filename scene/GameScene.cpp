@@ -180,6 +180,10 @@ void GameScene::Update()
 	//viewProjection_.target += kTargetMove;
 
 	CheckAllCollisions();
+
+	debugText_->SetPos(50, 640);
+	debugText_->Printf("possibleMove:(%d)",
+		possibleMove);
 }
 
 void GameScene::Draw() {
@@ -245,15 +249,17 @@ void GameScene::CheckAllCollisions()
 	//壁用の配列変数
 	int wallWidth = block_->GetBlockWidth();
 	int wallHeight = block_->GetBlockHight();
+
+	int onCollisionX = 0;
+	int onCollisionY = 0;
+
 	//壁用の座標
 	//Vector3 posWall[wallWidth][wallHeight];
 	Vector3 posWall;
 
 	//判定対象のAとBの半径
 	float radiusA,radiusB;
-	//モンスターの移動をしていいのかフラグ
-	bool possibleMove = 0;
-
+	
 	//勇者の弾リストの取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
 
@@ -351,12 +357,56 @@ void GameScene::CheckAllCollisions()
 	////壁の座標
 	//posA = block_->GetBlockPosition();
 	//
-	for (int i = 0; i < blockWidth; i++)
-	{
-		for (int j = 0; j < blockHeight; j++)
-		{
+	//for (int i = 0; i < blockWidth; i++)
+	//{
+	//	for (int j = 0; j < blockHeight; j++)
+	//	{
+	//		//壁の座標
+	//		block_->GetLocalPosition(wallPos);
+
+	//		//壁の半径
+	//		radiusA = block_->GetRadius();
+
+	//		//勇者とモンスターすべての当たり判定
+	//		for (const std::unique_ptr<Monster>& monster : monsters)
+	//		{
+	//			//モンスターの座標
+	//			posB = monster->GetLocalPosition();
+	//			//モンスターの半径
+	//			radiusB = monster->GetRadius();
+	//			//座標AとBの距離を求める
+	//			distance = wallPos[i][j] - posB;
+
+	//			//壁の状態で分岐させる
+
+	//			//球と球の交差判定
+	//			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+	//			{
+	//				//当たった時のブロックのX番号,Y番号を保存
+	//				onCollisionX = i;
+	//				onCollisionY = j;
+
+	//				//壁の衝突時コールバックを呼び出す
+	//				//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
+	//				possibleMove = block_->OnCollision(onCollisionX,onCollisionY);
+	//			}
+
+	//			//進めるなら移動関数を呼び出す
+	//			if (possibleMove == true)
+	//			{
+	//				//モンスターの衝突時コールバックを呼び出す
+	//				monster->OnCollisionMove();
+	//			}
+	//			//進めないなら方向転換関数を呼びだす
+	//			else if (possibleMove == false)
+	//			{
+	//				monster->ChangeDirection();
+	//			}
+	//		}
+	//	}
+	//}
 			//壁の座標
-			wallPos[i][j] = block_->GetBlockPosition();
+			block_->GetLocalPosition(wallPos);
 
 			//壁の半径
 			radiusA = block_->GetRadius();
@@ -364,36 +414,48 @@ void GameScene::CheckAllCollisions()
 			//勇者とモンスターすべての当たり判定
 			for (const std::unique_ptr<Monster>& monster : monsters)
 			{
-				//モンスターの座標
-				posB = monster->GetLocalPosition();
-				//モンスターの半径
-				radiusB = monster->GetRadius();
-				//座標AとBの距離を求める
-				distance = wallPos[i][j] - posB;
-
-				//壁の状態で分岐させる
-
-
-				//球と球の交差判定
-				if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+				for (int i = 0; i < blockWidth; i++)
 				{
-					//壁の衝突時コールバックを呼び出す
-					possibleMove = block_->OnCollision(posA);
+					for (int j = 0; j < blockHeight; j++)
+					{
+						//モンスターの座標
+						posB = monster->GetLocalPosition();
+						//モンスターの半径
+						radiusB = monster->GetRadius();
+						//座標AとBの距離を求める
+						distance = wallPos[i][j] - posB;
 
-					//進めるなら移動関数を呼び出す
-					if (possibleMove == true)
-					{
-						//モンスターの衝突時コールバックを呼び出す
-						monster->OnCollisionMove();
-					}
-					//進めないなら方向転換関数を呼びだす
-					if (possibleMove == false)
-					{
-						monster->ChangeDirection();
+						//壁の状態で分岐させる
+
+						//球と球の交差判定
+						if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+						{
+							//当たった時のブロックのX番号,Y番号を保存
+							onCollisionX = i;
+							onCollisionY = j;
+
+							//壁の衝突時コールバックを呼び出す
+							//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
+							possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+							monster->GetIsMove(possibleMove);
+							break;
+						}
 					}
 				}
+
+				//possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+
+				////進めるなら移動関数を呼び出す
+				//if (possibleMove == true)
+				//{
+				//	//モンスターの衝突時コールバックを呼び出す
+				//	monster->OnCollisionMove();
+				//}
+				////進めないなら方向転換関数を呼びだす
+				//else if (possibleMove == false)
+				//{
+				//	monster->ChangeDirection();
+				//}
 			}
-		}
-	}
 #pragma endregion
 }

@@ -70,13 +70,24 @@ void Monster::Update()
 	}*/
 
 	
+	//進めるなら移動関数を呼び出す
+	if (isMoved == true)
+	{
+		//モンスターの衝突時コールバックを呼び出す
+		OnCollisionMove();
+	}
+	//進めないなら方向転換関数を呼びだす
+	else if (isMoved == false)
+	{
+		ChangeDirection();
+	}
+
 	if (firstMove == true)
 	{
 		Vector3 Velocity_ = { kEnemySpeed, 0, 0 };
 		//座標を移動させる(1フレーム分の移動量を足しこむ)
-		worldTransform_.translation_ -= Velocity_;
+		worldTransform_.translation_ += Velocity_;
 	}
-
 	
 #pragma region キャラクターの攻撃
 
@@ -100,9 +111,9 @@ void Monster::Update()
 	Matrix4 matTrans = MathUtility::Matrix4Identity();
 
 	//キャラクター移動処理
-	float scaleX = 1.0f;
-	float scaleY = 1.0f;
-	float scaleZ = 1.0f;
+	float scaleX = 5.0f;
+	float scaleY = 5.0f;
+	float scaleZ = 5.0f;
 
 	//スケーリング倍率を行列に設定
 	matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);
@@ -140,9 +151,26 @@ void Monster::Update()
 	//	}
 	//}
 
+	debugText_->SetPos(50, 580);
+	debugText_->Printf("worldTranslation:(%f,%f,%f)",
+		worldTransform_.translation_.x, worldTransform_.translation_.y, worldTransform_.translation_.z);
+
+	debugText_->SetPos(50, 280);
+	debugText_->Printf("isMoved:(%d)",
+		isMoved);
+
+	debugText_->SetPos(50, 310);
+	debugText_->Printf("direction_:(%d)",
+		direction_);
+	/*debugText_->SetPos(150, 380);
+	debugText_->Printf("worldTranslation:(%f,%f,%f)",
+		worldTransform_.translation_.x, worldTransform_.translation_.y, worldTransform_.translation_.z);*/
+
 	debugText_->SetPos(50, 540);
 	debugText_->Printf("deathTimer_:(%d)",
 		deathTimer_);
+
+
 }
 
 Vector3 Monster::GetLocalPosition()
@@ -273,6 +301,7 @@ void Monster::OnCollisionMove()
 		//座標を移動させる(1フレーム分の移動量を足しこむ)
 		worldTransform_.translation_ += Velocity_;
 	}
+
 	else if (direction_ == Direction::Left)
 	{
 		Velocity_ = { kEnemySpeed, 0, 0 };
@@ -312,6 +341,9 @@ void Monster::ChangeDirection()
 		checkDirectionL = true;
 		checkDirectionR = false;
 	}
-	
+}
 
+void Monster::GetIsMove(bool possibleMove)
+{
+	isMoved = possibleMove;
 }

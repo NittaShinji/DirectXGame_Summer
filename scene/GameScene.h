@@ -146,4 +146,7 @@ class GameScene {
 	//カメラ上方向の角度
 	float viewAngle = 0.0f;
 
+	//モンスターの移動をしていいのかフラグ
+	bool possibleMove;
+
 };
