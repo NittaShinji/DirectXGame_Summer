@@ -10,11 +10,12 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 #include "Player.h"
-#include "Enemy.h"
+//#include "Monster.h"
 #include "Skydome.h"
 #include "RailCamera.h"
 #include "Block.h"
 #include "Select.h"
+#include <memory>
 
 /// <summary>
 /// ゲームシーン
@@ -82,8 +83,7 @@ class GameScene {
 	Model* rayModel = nullptr;
 	Model* modelSkydome_ = nullptr;
 
-	////ワールドトランスフォーム
-	// 
+	//ワールドトランスフォーム
 	//光線
 	WorldTransform  ray = { 0 };
 
@@ -110,25 +110,26 @@ class GameScene {
 
 	//プレイヤーの生成
 	std::shared_ptr<Player> player_;
-	//敵の生成
-	std::unique_ptr<Enemy> enemy_;
+	////敵の生成
+	//std::unique_ptr<Monster> Monster_;
 	//天球の生成
 	std::unique_ptr<Skydome> skydome_;
 	//レールカメラの生成
 	//std::shared_ptr<RailCamera> railCamera_;
 
+	//ブロックの生成
 	std::shared_ptr<Block> block_;
-
 	//カーソルの生成
 	std::unique_ptr<Select> select_;
-
-	//Monster* monster_;
 
 	//敵の初期座標
 	Vector3 enemyPos = { 10,0,40 };
 
 	//モンスターの初期座標
 	Vector3 monsterPos = { 0,0,0 };
+
+	//受け取り用の壁変数
+	Vector3 wallPos[blockWidth][blockHeight];
 
 	//レールカメラの初期座標
 	Vector3 railPos = { 0,0,0 };

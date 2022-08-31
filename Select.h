@@ -3,6 +3,7 @@
 #include "Model.h"
 #include "Input.h"
 #include "Debugtext.h"
+#include <memory>
 
 //ブロッククラスの前方宣言
 class Block;

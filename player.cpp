@@ -23,7 +23,7 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
-	worldTransform_.translation_ = { 0,0,0 };
+	worldTransform_.translation_ = { -10,10,0 };
 	/*worldTransform_.parent_ = &railWorldTransform;*/
 
 }
@@ -69,11 +69,11 @@ void Player::Update()
 	// キャラクターの移動ベクトル
 	Vector3 playerMove = { 0,0,0 };
 
-	/*if (input_->PushKey(DIK_RIGHT))
+	if (input_->PushKey(DIK_D))
 	{
 		playerMove.x = playerSpeed;
 	}
-	else if (input_->PushKey(DIK_LEFT))
+	else if (input_->PushKey(DIK_A))
 	{
 		playerMove.x = -playerSpeed;
 	}
@@ -82,22 +82,35 @@ void Player::Update()
 		playerMove.x = 0.0f;
 	}
 
-	if (input_->PushKey(DIK_UP))
+	if (input_->PushKey(DIK_W))
 	{
 		playerMove.y = playerSpeed;
 	}
-	else if (input_->PushKey(DIK_DOWN))
+	else if (input_->PushKey(DIK_S))
 	{
 		playerMove.y = -playerSpeed;
 	}
 	else
 	{
 		playerMove.y = 0.0f;
-	}*/
+	}
+
+	if (input_->PushKey(DIK_E))
+	{
+		playerMove.z = playerSpeed;
+	}
+	else if (input_->PushKey(DIK_Q))
+	{
+		playerMove.z = -playerSpeed;
+	}
+	else
+	{
+		playerMove.z = 0.0f;
+	}
 
 	worldTransform_.translation_.x += playerMove.x;
 	worldTransform_.translation_.y += playerMove.y;
-
+	worldTransform_.translation_.z += playerMove.z;
 #pragma endregion
 
 #pragma region 移動制限
@@ -117,7 +130,7 @@ void Player::Update()
 #pragma region キャラクターの攻撃
 
 	//キャラクターの攻撃
-	//Attack();
+	Attack();
 
 	//弾更新
 	for (std::unique_ptr<PlayerBullet>& bullet : bullets_)
@@ -203,7 +216,7 @@ void Player::Update()
 void Player::Attack()
 {
 	//弾の生成し、初期化
-	if (input_->PushKey(DIK_SPACE))
+	if (input_->PushKey(DIK_RETURN))
 	{
 		////自キャラの座標をコピー
 		//Vector3 position = worldTransform_.translation_;

@@ -4,12 +4,18 @@
 #include "Model.h"
 #include "Input.h"
 #include "Debugtext.h"
+#include "Monster.h"
+#include <list>
+#include <memory>
 
+static const int blockWidth = 30;
+static const int blockHeight = 30;
 
 class Block
 {
 public:
 
+	
 	//形態フェーズ
 	enum class Form
 	{
@@ -38,12 +44,33 @@ public:
 	void Draw(const ViewProjection& viewProjection);
 
 	//ワールド座標を取得
-	Vector3 GetLocalPosition();
+	Vector3 GetSelectPosition();
+
+	void GetLocalPosition(Vector3 blockPos[]);
+
+	//モンスター出現用に座標を渡す関数
+	Vector3 GetBlockPosition();
+	//モンスターを出現させてもいいかどうか教えるフラグ関数
+	bool GetBirthMonster();
+
+	// 衝突を検知したら呼び出されるコールバック関数
+	bool OnCollision(Vector3 wallPos);
+
+	//モンスターリストを取得
+	const std::list<std::unique_ptr<Monster>>& GetMonsters() { return monsters_; }
+
+	//モンスターを生成する
+	void Birth();
+
+	//半径を取得
+	float GetRadius();
+
+	//壁の横の長さを渡す
+	int GetBlockWidth();
+	//壁の縦の長さを渡す
+	int GetBlockHight();
 
 private:
-
-	static const int blockWidth = 30;
-	static const int blockHeight = 30;
 
 	// ワールド変換データ
 	//WorldTransform worldTransforms_[blockWidth][blockHeight];
@@ -71,6 +98,7 @@ private:
 	float scaleY = 8.0f;
 	float scaleZ = 8.0f;
 
+	//前のフレームにおいて選択用のブロックの情報を保存しておく変数
 	int prevBlockX;
 	int prevBlockY;
 
@@ -85,14 +113,47 @@ private:
 	int32_t selectTimer_ = kSelectTime;
 	int32_t wasSelectTimer_ = kSelectTime;
 
+	//モンスター
+	std::list<std::unique_ptr<Monster>> monsters_;
 
-	//int selectTimer;
+	//ブロックが破壊されたフラグ
+	bool breakBlock[blockWidth][blockHeight];
+	//bool birthMonster;
+
+	//モンスターが生まれたフラグ
+	bool birthMonster;
+
+	//モンスター初期化用の変数
+	Vector3 worldMonsterTransform;
+
+	//bool breakBlock[blockWidth][blockHeight] = { 0 };
+
+	//bool breakBlock2[blockWidth][blockHeight] = { 0 };
+
+
+	//ブロック破壊後の孵化用の設定時間
+	static const int32_t kBirthTime = 90;
+	//孵化時間
+	int32_t birthTimer_[blockWidth][blockHeight] = { 0 };
+	//int32_t wasSelectTimer_ = kSelectTime;
+
 
 	//ブロックが選択されているか
 	//int isSelected[blockWidth][blockHeight] = { 0 };
 
 	////個々のブロック用の状態変化変数
 	//int formChange[blockWidth][blockHeight] = { 0 };
+
+	//ワールド座標を入れる変数
+	Vector3 monsterPos;
+
+	//衝突した壁を入れる用の変数
+	Vector3 collisionPos;
+
+	//半径
+	const float radius = 0.5f;
+
+
 
 };
 

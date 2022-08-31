@@ -28,7 +28,7 @@ void Select::receive()
 {
 	assert(block_);
 
-	boxPos = block_->GetLocalPosition();
+	boxPos = block_->GetSelectPosition();
 
 }
 

@@ -40,6 +40,10 @@ void Block::Initialize(Model* model, const Vector3& position)
 				form_[i][j] = Form::IsSelected;
 			}
 
+			//モンスターの生成時間の設定
+			birthTimer_[i][j] = kBirthTime;
+
+			breakBlock[i][j] = false;
 			//form_[i][j] = Form::IsSelected;
 
 			if (i > 0)
@@ -59,15 +63,25 @@ void Block::Initialize(Model* model, const Vector3& position)
 	wasChangedSelect = true;
 	changedSelect = true;
 	prevBlockX = 0;
+	birthMonster = false;
+
 }
 
 //更新
 void Block::Update()
 {
+	//monster_.remove_if([]);
+
+	monsters_.remove_if([](std::unique_ptr<Monster>& monster) {
+		return monster->IsDead();
+		});
+
+
 	for (int i = 0; i < blockWidth; i++)
 	{
 		for (int j = 0; j < blockHeight; j++)
 		{
+#pragma region カーソル処理
 			if (input_->PushKey(DIK_RIGHT) && i < blockWidth && changedSelect == true)
 			{
 				//前カーソルの状態からカーソル状態をなくして、カーソルがつく前の状態にする。
@@ -247,11 +261,15 @@ void Block::Update()
 			{
 
 			}
+#pragma endregion カーソル処理
 
 			if (input_->PushKey(DIK_SPACE) && form_[i][j] == Form::IsSelected && wasChangedSelect == true)
 			{
 				form_[i][j] = Form::WasSelected;
 				wasChangedSelect = false;
+				//breakBlock[i][j] = true;
+				breakBlock[i][j] = true;
+				//breakBlock = true;
 			}
 
 			if (input_->PushKey(DIK_1))
@@ -264,6 +282,73 @@ void Block::Update()
 					}
 				}
 			}
+
+			if (breakBlock[i][j] == true)
+			{
+				if (form_[i][j] == Form::WasSelected)
+				{
+					//ワールド行列の平行移動成分を取得(ワールド座標)
+					monsterPos = worldTransforms_[i][j].translation_;
+				}
+
+				birthMonster = true;
+				breakBlock[i][j] = false;
+			}
+
+			//if (breakBlock = true)
+			//{
+			//	if (form_[i][j] == Form::WasSelected)
+			//	{
+			//		//ワールド行列の平行移動成分を取得(ワールド座標)
+			//		monsterPos = worldTransforms_[i][j].translation_;
+			//	}
+
+			//	birthMonster[i][j] = true;
+			//	//birthTimer_[i][j] = kBirthTime;
+			//	//breakBlock = false;
+			//}
+
+			//if (breakBlock[i][j] == true)
+			//{
+			//	if (--birthTimer_[i][j] <= 0)
+			//	{
+			//		birthMonster[i][j] = true;
+			//		Birth();
+			//		//birthTimer_[i][j] = kBirthTime;
+			//		breakBlock[i][j] = false;
+			//	}
+			//}
+
+			//if (birthMonster[i][j] == true)
+			//{
+			//	
+			//	//birthMonster[i][j] = false;
+			//}
+
+			//X座標の一つ前の番号を保存
+			prevBlockY = j;
+		}
+		//Y座標の一つ前のブロック番号を保存
+		prevBlockX = i;
+	}
+
+	if (birthMonster == true)
+	{
+		Birth();
+		//birthTimer_[i][j] = kBirthTime;
+		birthMonster = false;
+	}
+
+	//モンスター更新
+	for (std::unique_ptr<Monster>& monster : monsters_)
+	{
+		monster->Update();
+	}
+
+	for (int i = 0; i < blockWidth; i++)
+	{
+		for (int j = 0; j < blockHeight; j++)
+		{
 
 #pragma region 行列の更新
 			//スケーリング用行列を宣言
@@ -315,12 +400,10 @@ void Block::Update()
 
 #pragma endregion
 
-			//X座標の一つ前の番号を保存
-			prevBlockY = j;
 		}
-		//Y座標の一つ前のブロック番号を保存
-		prevBlockX = i;
 	}
+
+#pragma region リセット処理
 
 	if (changedSelect == false)
 	{
@@ -339,6 +422,49 @@ void Block::Update()
 			wasSelectTimer_ = kSelectTime;
 		}
 	}
+
+#pragma endregion
+
+#pragma region デバッグテキスト
+	/*debugText_->SetPos(50, 200);
+	debugText_->Printf("worldTranslation[0]:(%f,%f,%f)",
+		worldTransforms_[1][1].translation_.x, worldTransforms_[1][1].translation_.y, worldTransforms_[1][1].translation_.z);*/
+
+	debugText_->SetPos(50, 200);
+	debugText_->Printf("Form:(%d)",
+		form_[1][1]);
+
+	/*debugText_->SetPos(50, 250);
+	debugText_->Printf("breakBlock[1][0]:(%d)",
+		breakBlock[1][0]);
+	debugText_->SetPos(50, 280);
+	debugText_->Printf("breakBlock[1][1]:(%d)",
+		breakBlock[1][1]);
+	debugText_->SetPos(50, 310);
+	debugText_->Printf("breakBlock[1][2]:(%d)",
+		breakBlock[1][2]);*/
+
+	debugText_->SetPos(50, 350);
+	debugText_->Printf("birthTimer_[1][0]:(%d)",
+		birthTimer_[1][0]);
+	debugText_->SetPos(50, 380);
+	debugText_->Printf("birthTimer_[1][1]:(%d)",
+		birthTimer_[1][1]);
+	debugText_->SetPos(50, 410);
+	debugText_->Printf("birthTimer_[1][2]:(%d)",
+		birthTimer_[1][2]);
+
+	debugText_->SetPos(50, 450);
+	debugText_->Printf("birthMonster[1][0]:(%d)",
+		breakBlock[1][0]);
+	debugText_->SetPos(50, 480);
+	debugText_->Printf("birthMonster[1][1]:(%d)",
+		breakBlock[1][1]);
+	debugText_->SetPos(50, 510);
+	debugText_->Printf("birthMonster[1][2]:(%d)",
+		breakBlock[1][2]);
+#pragma endregion
+
 }
 //描画
 void Block::Draw(const ViewProjection& viewProjection)
@@ -365,11 +491,6 @@ void Block::Draw(const ViewProjection& viewProjection)
 
 				model_->Draw(worldTransforms_[i][j], viewProjection, selectHandle_);
 				break;
-			case Form::Slime:
-
-				model_->Draw(worldTransforms_[i][j], viewProjection, slimeHandle_);
-
-				break;
 			case Form::None:
 				break;
 
@@ -378,9 +499,15 @@ void Block::Draw(const ViewProjection& viewProjection)
 			}
 		}
 	}
+
+	//モンスター描画
+	for (std::unique_ptr<Monster>& monster : monsters_)
+	{
+		monster->Draw(viewProjection);
+	}
 }
 
-Vector3 Block::GetLocalPosition()
+Vector3 Block::GetSelectPosition()
 {
 	//ワールド座標を入れる変数
 	Vector3 worldPos;
@@ -396,7 +523,141 @@ Vector3 Block::GetLocalPosition()
 				worldPos = worldTransforms_[i][j].translation_;
 			}
 		}
-	}	
+	}
 
 	return worldPos;
+}
+
+//モンスターの当たり判定用に壁の座標を渡す関数
+Vector3 Block::GetBlockPosition()
+{
+	//ローカル座標を入れる変数
+	Vector3 monsterPos[blockWidth][blockHeight];
+
+	//全ての壁の座標を渡す
+	for (int i = 0; i < blockWidth; i++)
+	{
+		for (int j = 0; j < blockHeight; j++)
+		{
+			//ワールド行列の平行移動成分を取得(ワールド座標)
+			monsterPos[i][j] = worldTransforms_[i][j].translation_;
+		}
+	}
+}
+
+void Block::GetLocalPosition(Vector3 blockPos)
+{
+	Vector3 monsterPos[blockWidth][blockHeight];
+
+	//全ての壁の座標を渡す
+	for (int i = 0; i < blockWidth; i++)
+	{
+		for (int j = 0; j < blockHeight; j++)
+		{
+			//ワールド行列の平行移動成分を取得(ワールド座標)
+			monsterPos[i][j] = worldTransforms_[i][j].translation_;
+		}
+	}
+
+	blockPos = monsterPos;
+}
+
+bool Block::GetBirthMonster()
+{
+	return breakBlock;
+}
+
+void Block::Birth()
+{
+	//モンスターを生成し、初期化
+		//PlayerBullet* newBullet = new PlayerBullet();
+	std::unique_ptr<Monster> newMonster = std::make_unique<Monster>();
+	//newBullet->Initialize(model_ ,worldTransform_.translation_,velocity);
+
+	//モンスターの速度
+	const float kMonsterSpeed = 1.0f;
+	Vector3 velocity(0, 0, kMonsterSpeed);
+
+	//for (int i = 0; i < blockWidth; i++)
+	//{
+	//	for (int j = 0; j < blockHeight; j++)
+	//	{
+	//		if (breakBlock == true)
+	//		{
+	//			if (form_[i][j] == Form::WasSelected)
+	//			{
+	//				//ワールド行列の平行移動成分を取得(ワールド座標)
+	//				monsterPos = worldTransforms_[i][j].translation_;
+	//			}
+	//		}
+	//	}
+	//}
+	
+	////自機の平行移動成分の情報を取得
+	//worldMonsterTransform.x = worldTransform_.matWorld_.m[3][0];
+	//worldMonsterTransform.y = worldTransform_.matWorld_.m[3][1];
+	//worldMonsterTransform.z = worldTransform_.matWorld_.m[3][2];
+
+	//モンスターを生成
+	newMonster->Initialize(model_, monsterPos, velocity, birthMonster);
+
+	//モンスターを登録する
+	monsters_.push_back(std::move(newMonster));
+}
+
+bool Block::OnCollision(Vector3 wallPos)
+{
+	collisionPos = wallPos;
+
+	for (int i = 0; i < blockWidth; i++)
+	{
+		for (int j = 0; j < blockHeight; j++)
+		{
+			if (worldTransforms_[i][j].translation_.x == collisionPos.x)
+			{
+				if (worldTransforms_[i][j].translation_.y == collisionPos.y)
+				{
+					if (worldTransforms_[i][j].translation_.z == collisionPos.z)
+					{
+						if (form_[i][j] == Form::WasSelected || form_[i][j] == Form::None)
+						{
+							return true;
+						}
+						else if(form_[i][j] == Form::Block || form_[i][j] == Form::IsSelected)
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+float Block::GetRadius()
+{
+	//半径を入れる変数
+	float blockRadius;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	blockRadius = radius;
+	return blockRadius;
+}
+
+//壁の横の長さを渡す
+int Block::GetBlockWidth()
+{
+	//壁の横の長さを入れる変数
+	float blockWidth_;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	blockWidth_ = blockWidth;
+	return blockWidth_;
+}
+//壁の縦の長さを渡す
+int Block::GetBlockHight()
+{
+	//壁の横の長さを入れる変数
+	float blockHight_;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	blockHight_ = blockHeight;
+	return blockHight_;
 }

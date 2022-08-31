@@ -45,6 +45,17 @@ void GameScene::Initialize() {
 	////レールカメラの初期化
 	//railCamera_->Initialize(railPos, angle);
 
+	//ブロックの生成
+	Block* newBlock = new Block();
+	block_.reset(newBlock);
+	//ブロックの初期化
+	block_->Initialize(model_, monsterPos);
+
+	//カーソルの生成
+	Select* newSelect = new Select;
+	select_.reset(newSelect);
+	select_->Initialize(model_);
+
 	//自キャラの生成と登録
 	Player* newPlayer = new Player;
 	player_.reset(newPlayer);
@@ -54,10 +65,10 @@ void GameScene::Initialize() {
 	player_->Initialize(model_, textureHandle_);
 	
 	//敵の生成
-	Enemy* newEnemy = new Enemy();
-	enemy_.reset(newEnemy);	
-	//敵の初期化
-	enemy_->Initialize(model_,enemyPos);
+	//Monster* newMonster = new Monster();
+	//Monster_.reset(newMonster);	
+	////敵の初期化
+	//Monster_->Initialize(model_,enemyPos);
 
 	//天球の生成
 	Skydome* newSkydome = new Skydome();
@@ -65,35 +76,20 @@ void GameScene::Initialize() {
 	//天球の初期化
 	skydome_->Initialize(modelSkydome_);
 
-	//ブロックの生成
-	Block* newBlock = new Block();
-	block_.reset(newBlock);
-	//ブロックの初期化
-	block_->Initialize(model_, monsterPos);
-
-
-	//カーソルの生成
-	Select* newSelect = new Select;
-	select_.reset(newSelect);
-	select_->Initialize(model_);
 	
 	//monster_ = new Monster;
 
-	
-	//敵キャラに自キャラのアドレスを渡す
-	enemy_->SetPlayer(player_);
 	//カーソルにブロックのアドレスを渡す
 	select_->SetBlock(block_);
 
+	//敵キャラに自キャラのアドレスを渡す
+	//Monster_->SetPlayer(player_);
 	
-	// ビュープロジェクションの初期化
-	viewProjection_.Initialize();
-
 	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 
 	//カメラ視点座標を設定
-	//viewProjection_.eye = { 0,0,-10 };
+	viewProjection_.eye = { 0,0,-150 };
 
 	//カメラ注視点座標を設定
 	//viewProjection_.target = { 10,0,0 };
@@ -112,6 +108,9 @@ void GameScene::Initialize() {
 	////ファークリップ距離を設定
 	//viewProjection_.farZ = 53.0f;
 
+	// ビュープロジェクションの初期化
+	viewProjection_.Initialize();
+
 	// 軸方向表示を有効にする
 	AxisIndicator::GetInstance()->SetVisible(true);
 
@@ -125,14 +124,14 @@ void GameScene::Initialize() {
 void GameScene::Update() 
 {
 	assert(player_);
-	assert(enemy_);
+	//assert(Monster_);
 	assert(block_);
 
 	debugCamera_->Update();
 	player_->Update();
-	enemy_->Update();
-	skydome_->Update();
 	block_->Update();
+	//Monster_->Update();
+	skydome_->Update();
 	select_->Update();
 	//railCamera_->Update();
 
@@ -210,7 +209,7 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	
 	player_->Draw(viewProjection_,textureHandle_);
-	enemy_->Draw(viewProjection_);
+	//Monster_->Draw(viewProjection_);
 	skydome_->Draw(viewProjection_);
 	block_->Draw(viewProjection_);
 	select_->Draw(viewProjection_);
@@ -242,27 +241,40 @@ void GameScene::CheckAllCollisions()
 {
 	//判定対象AとBの座標
 	Vector3 posA, posB;
+
+	//壁用の配列変数
+	int wallWidth = block_->GetBlockWidth();
+	int wallHeight = block_->GetBlockHight();
+	//壁用の座標
+	//Vector3 posWall[wallWidth][wallHeight];
+	Vector3 posWall;
+
 	//判定対象のAとBの半径
 	float radiusA,radiusB;
+	//モンスターの移動をしていいのかフラグ
+	bool possibleMove = 0;
 
-	//自弾リストの取得
+	//勇者の弾リストの取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
 
-	//敵弾リストの取得
-	const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = enemy_->GetBullets();
+	//モンスターリストの取得
+	const std::list<std::unique_ptr<Monster>>& monsters = block_->GetMonsters();
 
-#pragma region 自キャラと敵弾の当たり判定
-	//自キャラの座標
+	//敵弾リストの取得
+	//const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = ->GetBullets();
+
+#pragma region 勇者とモンスターの当たり判定
+	//勇者の座標
 	posA = player_->GetLocalPosition();
-	//自キャラの半径
+	//勇者の半径
 	radiusA = player_->GetRadius();
-	//自キャラと敵弾すべての当たり判定
-	for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+	//勇者とモンスターすべての当たり判定
+	for (const std::unique_ptr<Monster>& monster : monsters)
 	{
-		//敵弾の座標
-		posB = enemyBullet->GetLocalPosition();
-		//敵弾の半径
-		radiusB = enemyBullet->GetRadius();
+		//モンスターの座標
+		posB = monster->GetLocalPosition();
+		//モンスターの半径
+		radiusB = monster->GetRadius();
 		//座標AとBの距離を求める
 		distance = posA - posB;
 
@@ -272,63 +284,114 @@ void GameScene::CheckAllCollisions()
 			//自キャラの衝突時コールバックを呼び出す
 			player_->OnCollision();
 			//敵弾の衝突時コールバックを呼び出す
-			enemyBullet->OnCollision();
+			monster->OnCollision();
 		}
 	}
 #pragma endregion
+//
+#pragma region 勇者の弾とモンスターの当たり判定
+	////モンスターの座標
+	//posA = monsters->GetLocalPosition();
+	////モンスターの半径
+	//radiusA = monsters->GetRadius();
 
-#pragma region 自弾と敵キャラの当たり判定
-	//敵キャラの座標
-	posA = enemy_->GetLocalPosition();
-	//敵キャラの半径
-	radiusA = enemy_->GetRadius();
+	////勇者の弾と敵キャラのすべての当たり判定
+	//for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
+	//{
+	//	//勇者の弾の座標
+	//	posB = playerBullet->GetLocalPosition();
+	//	//敵弾の半径
+	//	radiusB = playerBullet->GetRadius();
+	//	//座標AとBの距離を求める
+	//	distance = posA - posB;
 
-	//自弾と敵キャラのすべての当たり判定
-	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
-	{
-		//自弾の座標
-		posB = playerBullet->GetLocalPosition();
-		//敵弾の半径
-		radiusB = playerBullet->GetRadius();
-		//座標AとBの距離を求める
-		distance = posA - posB;
-
-		//球と球の交差判定
-		if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
-		{
-			//自キャラの衝突時コールバックを呼び出す
-			enemy_->OnCollision();
-			//敵弾の衝突時コールバックを呼び出す
-			playerBullet->OnCollision();
-		}
-	}
+	//	//球と球の交差判定
+	//	if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+	//	{
+	//		//自キャラの衝突時コールバックを呼び出す
+	//		Monster_->OnCollision();
+	//		//敵弾の衝突時コールバックを呼び出す
+	//		playerBullet->OnCollision();
+	//	}
+	//}
 #pragma endregion
-
-#pragma region 自弾と敵弾の当たり判定
-	//自弾と敵弾のすべての当たり判定
+//
+#pragma region 勇者の弾とモンスターの当たり判定
+	//勇者の弾とモンスターのすべての当たり判定
 	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
 	{
-		//自弾の座標
-		posB = playerBullet->GetLocalPosition();
+		//勇者の弾の座標
+		posA = playerBullet->GetLocalPosition();
 		//敵弾の半径
-		radiusB = playerBullet->GetRadius();
+		radiusA = playerBullet->GetRadius();
 
-		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+		for (const std::unique_ptr<Monster>& monster : monsters)
 		{
-			//敵弾の座標
-			posB = enemyBullet->GetLocalPosition();
-			//敵弾の半径
-			radiusB = enemyBullet->GetRadius();
+			//モンスターの座標
+			posB = monster->GetLocalPosition();
+			//モンスターの半径
+			radiusB = monster->GetRadius();
 			//座標AとBの距離を求める
 			distance = posA - posB;
 
 			//球と球の交差判定
 			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
 			{
-				//自キャラの衝突時コールバックを呼び出す
+				//勇者の弾の衝突時コールバックを呼び出す
 				playerBullet->OnCollision();
-				//敵弾の衝突時コールバックを呼び出す
-				enemyBullet->OnCollision();
+				//モンスターの衝突時コールバックを呼び出す
+				monster->OnCollision();
+			}
+		}
+	}
+#pragma endregion
+
+#pragma region モンスターと壁の当たり判定
+
+	////壁の座標
+	//posA = block_->GetBlockPosition();
+	//
+	for (int i = 0; i < blockWidth; i++)
+	{
+		for (int j = 0; j < blockHeight; j++)
+		{
+			//壁の座標
+			wallPos[i][j] = block_->GetBlockPosition();
+
+			//壁の半径
+			radiusA = block_->GetRadius();
+
+			//勇者とモンスターすべての当たり判定
+			for (const std::unique_ptr<Monster>& monster : monsters)
+			{
+				//モンスターの座標
+				posB = monster->GetLocalPosition();
+				//モンスターの半径
+				radiusB = monster->GetRadius();
+				//座標AとBの距離を求める
+				distance = wallPos[i][j] - posB;
+
+				//壁の状態で分岐させる
+
+
+				//球と球の交差判定
+				if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+				{
+					//壁の衝突時コールバックを呼び出す
+					possibleMove = block_->OnCollision(posA);
+
+					//進めるなら移動関数を呼び出す
+					if (possibleMove == true)
+					{
+						//モンスターの衝突時コールバックを呼び出す
+						monster->OnCollisionMove();
+					}
+					//進めないなら方向転換関数を呼びだす
+					if (possibleMove == false)
+					{
+						monster->ChangeDirection();
+					}
+				}
 			}
 		}
 	}
