@@ -20,7 +20,7 @@ void Monster::Initialize(Model* model, const Vector3& position, const Vector3& v
 	Model_ = model;
 
 	//テクスチャ読み込み
-	monsterHandle_ = TextureManager::Load("mario.jpg");
+	monsterHandle_ = TextureManager::Load("suraimu.png");
 
 	//生んだかどうかの情報をコピーする
 	birthMonster_ = birthMonster;
@@ -38,13 +38,23 @@ void Monster::Initialize(Model* model, const Vector3& position, const Vector3& v
 	//引数で受け取った初期座標をセット
 	worldTransform_.translation_ = position;
 
+	bulletCoolTimer = 0;
+
 	ApproachInitialize();
+
+	//デスフラグの立った弾を削除
+	bullets_.remove_if([](std::unique_ptr<EnemyBullet>& bullet) {
+		return bullet->IsDead();
+		});
+
 }
 
 //更新
 void Monster::Update()
 {
 	//assert(block_);
+
+	score += 1;
 
 	//デスフラグの立った弾を削除
 	bullets_.remove_if([](std::unique_ptr<EnemyBullet>& bullet) {
@@ -59,7 +69,7 @@ void Monster::Update()
 	{
 	case Phase::Approach:
 	default:
-		PhsaeApproach();
+		
 
 		break;
 
@@ -69,25 +79,27 @@ void Monster::Update()
 		break;
 	}*/
 
-	
-	//進めるなら移動関数を呼び出す
-	if (isMoved == true)
-	{
-		//モンスターの衝突時コールバックを呼び出す
-		OnCollisionMove();
-	}
-	//進めないなら方向転換関数を呼びだす
-	else if (isMoved == false)
-	{
-		ChangeDirection();
-	}
+	PhsaeApproach();
 
-	if (firstMove == true)
-	{
-		Vector3 Velocity_ = { kEnemySpeed, 0, 0 };
-		//座標を移動させる(1フレーム分の移動量を足しこむ)
-		worldTransform_.translation_ += Velocity_;
-	}
+	
+	////進めるなら移動関数を呼び出す
+	//if (isMoved == true)
+	//{
+	//	//モンスターの衝突時コールバックを呼び出す
+	//	OnCollisionMove();
+	//}
+	////進めないなら方向転換関数を呼びだす
+	//else if (isMoved == false)
+	//{
+	//	ChangeDirection();
+	//}
+
+	//if (firstMove == true)
+	//{
+	//	Vector3 Velocity_ = { kEnemySpeed, 0, 0 };
+	//	//座標を移動させる(1フレーム分の移動量を足しこむ)
+	//	worldTransform_.translation_ += Velocity_;
+	//}
 	
 #pragma region キャラクターの攻撃
 
@@ -108,9 +120,9 @@ void Monster::Update()
 	Matrix4 matTrans = MathUtility::Matrix4Identity();
 
 	//キャラクター移動処理
-	float scaleX = 8.0f;
-	float scaleY = 8.0f;
-	float scaleZ = 8.0f;
+	float scaleX = 1.0f;
+	float scaleY = 1.0f;
+	float scaleZ = 1.0f;
 
 	//スケーリング倍率を行列に設定
 	matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);
@@ -139,14 +151,14 @@ void Monster::Update()
 
 #pragma endregion
 
-	//if (birthMonster_ == true)
-	//{
-	//	//時間経過でデス
-	//	if (--deathTimer_ <= 0)
-	//	{
-	//		isDead_ = true;
-	//	}
-	//}
+	/*if (birthMonster_ == true)
+	{
+		時間経過でデス
+		if (--deathTimer_ <= 0)
+		{
+			isDead_ = true;
+		}
+	}*/
 
 	debugText_->SetPos(50, 580);
 	debugText_->Printf("worldTranslation:(%f,%f,%f)",
@@ -183,22 +195,30 @@ void Monster::Fire()
 
 	//　弾の速度
 	const float kBulletSpeed = -1.0f;
-	Vector3 velocity(kBulletSpeed, 0, 0);
+	Vector3 velocity(0, 0, kBulletSpeed);
 
 	//自機のワールド座標を取得
-	//Vector3 playerPos = player_->GetLocalPosition();
-	//敵のワールド座標を取得
-	Vector3 enemyPos = worldTransform_.translation_;
+	//Vector3 playerPos = player_->GetWorldPosition();
 
-	//差分ベクトル
-	Vector3 difVec;
-	//差分ベクトルを求める
+	//敵のワールド座標を取得
+	//Vector3 enemyPos = worldTransform_.translation_;
+	Vector3 enemyPos;
+
+	enemyPos.x = worldTransform_.matWorld_.m[3][0];
+	enemyPos.y = worldTransform_.matWorld_.m[3][1];
+	enemyPos.z = worldTransform_.matWorld_.m[3][2];
+
+	//enemyPos.x = worldTransform_.translation_;
+
+	////差分ベクトル
+	//Vector3 difVec;
+	////差分ベクトルを求める
 	//difVec = playerPos - enemyPos;
-	//差分ベクトルを正規化
-	difVec.normalize();
-	//ベクトルの長さを早さに合わせる
-	const float bulletSpeed = 0.2f;
-	difVec *= bulletSpeed;
+	////差分ベクトルを正規化
+	//difVec.normalize();
+	////ベクトルの長さを早さに合わせる
+	//const float bulletSpeed = 0.2f;
+	//difVec *= bulletSpeed;
 
 	// 速度ベクトルを自機の向きに合わせて回転させる
 	//velocity = Root(velocity, enemyworldTransform_);
@@ -206,7 +226,7 @@ void Monster::Fire()
 	//弾を生成し、初期化
 		//PlayerBullet* newBullet = new PlayerBullet();
 	std::unique_ptr<EnemyBullet> newBullet = std::make_unique<EnemyBullet>();
-	newBullet->Initialize(Model_, worldTransform_.translation_, difVec);
+	newBullet->Initialize(Model_, worldTransform_.translation_,velocity);
 
 	//弾を登録する
 	//bullet_.reset(newBullet);
@@ -224,6 +244,11 @@ void Monster::Draw(const ViewProjection& viewProjection)
 	}
 }
 
+void Monster::Dead()
+{
+	isDead_ = true;
+}
+
 void Monster::ApproachInitialize()
 {
 	//発射タイマーを初期化
@@ -235,10 +260,10 @@ void Monster::PhsaeApproach()
 	//移動(ベクトルを加算)
 	//enemyworldTransform_.translation_ -= ApproachSpeed;
 	//既定の位置に到達したら離脱
-	if (worldTransform_.translation_.x < -40.0f)
+	/*if (worldTransform_.translation_.x < -40.0f)
 	{
 		phase_ = Phase::Leave;
-	}
+	}*/
 
 	//発射タイマーをカウントダウン
 	bulletCoolTimer--;
@@ -354,3 +379,13 @@ Vector3 Monster::GetWorldPosition()
 	worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
 	return worldResultTransform;
 }
+
+int Monster::GetScore()
+{
+	return score;
+}
+
+//int Monster::IsDeadCount()
+//{
+//	return isDead_;
+//}

@@ -20,16 +20,23 @@ public:
 	// 衝突を検知したら呼び出されるコールバック関数
 	void OnCollision();
 
+	void OnCollisionStop();
+
 	//ワールド座標を取得
 	Vector3 GetLocalPosition();
+
+	Vector3 GetWorldPosition();
 
 	//半径を取得
 	float GetRadius();
 
+	//死ぬ
+	void Dead();
+
 private:
 
 	// ワールド変換データ
-	WorldTransform eBulletWorldTransform_;
+	WorldTransform worldTransform_;
 	// モデル
 	Model* eBulletModel_ = nullptr;
 
@@ -49,5 +56,9 @@ private:
 
 	//半径
 	const float radius = 0.5f;
+
+	Vector3 worldResultTransform;
+
+	bool canMoved;
 
 };

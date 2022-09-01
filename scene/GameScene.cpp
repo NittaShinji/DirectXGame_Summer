@@ -28,10 +28,11 @@ void GameScene::Initialize() {
 	debugText_ = DebugText::GetInstance();
 
 	//ファイル名を指定してテクスチャを読み込む
-	textureHandle_ = TextureManager::Load("maou4.png");
+	textureHandle_ = TextureManager::Load("maou.png");
 
 	//audio_->LoadWave("GetSE.wav");
 	clickAudio_ = audio_->LoadWave("GetSE.wav");
+	
 
 	// 3Dモデルの生成
 	model_ = Model::Create();
@@ -68,6 +69,13 @@ void GameScene::Initialize() {
 	Skydome* newSkydome = new Skydome;
 	skydome_.reset(newSkydome);
 
+	//スコアの生成
+	Score* newScore = new Score;
+	score_.reset(newScore);
+
+	AirCamera* newAirCamera = new AirCamera;
+	airCamera_.reset(newAirCamera);
+
 	////自キャラにレールカメラのアドレスを渡す
 	//player_->SetRailCamera(railCamera_);
 
@@ -80,8 +88,10 @@ void GameScene::Initialize() {
 	//敵キャラに自キャラのアドレスを渡す
 	//Monster_->SetPlayer(player_);
 
-	
 
+	airCamera_->Initialize(airPos, airAngle);
+	//スコアの初期化
+	score_->Initialize(model_);
 	//シーン関連のものを初期化
 	scene_->Initialize(model_);
 	//ブロックの初期化
@@ -96,11 +106,17 @@ void GameScene::Initialize() {
 	//カーソルにブロックのアドレスを渡す
 	select_->SetBlock(block_);
 
-	//カメラ視点座標を設定
-	viewProjection_.eye = { 0,0,-150 };
+	/*Monster* monster__ = new Monster;
+	monster__->SetPlayer(player_);
+	delete monster__;*/
 
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
+
+	//カメラ視点座標を設定
+	viewProjection_.eye = { 0,20,-20 };
+
+	limitTimer_ = kLifeTime;
 
 	//// 軸方向表示を有効にする
 	//AxisIndicator::GetInstance()->SetVisible(true);
@@ -141,7 +157,7 @@ void GameScene::Update()
 	//assert(Monster_);
 	assert(block_);
 
-	
+
 
 	switch (scene)
 	{
@@ -149,15 +165,20 @@ void GameScene::Update()
 		debugCamera_->Update();
 		scene_->Update();
 
-		if (input_->PushKey(DIK_G))
+		if (input_->PushKey(DIK_SPACE))
 		{
-			audio_->PlayWave(clickAudio_,false,1.0f);
+			audio_->PlayWave(clickAudio_, false, 1.0f);
 			scene = GAME;
 		}
+		viewProjection_ = debugCamera_->GetViewProjection();
+		//行列の再計算
+		viewProjection_.UpdateMatrix();
+
 
 		break;
 
 	case::GAME:
+		airCamera_->Update();
 		debugCamera_->Update();
 		scene_->Update();
 		player_->Update();
@@ -165,9 +186,75 @@ void GameScene::Update()
 		//Monster_->Update();
 		skydome_->Update();
 		select_->Update();
+		//CheckScore();
+		score_->Update();
+
+
 		//railCamera_->Update();
+		//スコアを受け取る
+		//scoreMonster = monster->SetScore();
+		//scoreBlock = block_->GetScore();
+		//score = score_->GetScore();
 
 		CheckAllCollisions();
+		//viewProjection_ = debugCamera_->GetViewProjection();
+		if (input_->PushKey(DIK_Q))
+		{
+			viewProjection_ = airCamera_->GetViewProjection();
+		}
+		
+		//行列の再計算
+		viewProjection_.UpdateMatrix();
+
+		if (block_->GetBreakAll() == true && deadMonsterCount >= (blockWidth * blockHeight))
+		{
+			scene = GAMECLEAR;
+		}
+
+
+		/*if (input_->PushKey(DIK_T))
+		{
+			audio_->PlayWave(clickAudio_, false, 1.0f);
+			scene = GAMECLEAR;
+		}
+		if (input_->PushKey(DIK_Y))
+		{
+			audio_->PlayWave(clickAudio_, false, 1.0f);
+			scene = GAMEOVER;
+		}*/
+
+		if (player_->loseGame() == true)
+		{
+			viewProjection_ = debugCamera_->GetViewProjection();
+			scene = GAMEOVER;
+		}
+
+		/*if (--limitTimer_ <= 0)
+		{
+			scene = GAMEOVER;
+		}*/
+
+		break;
+
+	case::GAMECLEAR:
+		
+		if (input_->PushKey(DIK_SPACE))
+		{
+			resetDeath();
+			reset();
+			scene = TITLE;
+		}
+
+		break;
+	case::GAMEOVER:
+		
+		debugCamera_->Update();
+		if (input_->PushKey(DIK_SPACE))
+		{
+			resetDeath();
+			reset();
+			scene = TITLE;
+		}
 
 		break;
 
@@ -203,11 +290,9 @@ void GameScene::Update()
 	//	break;
 	//}
 
-	viewProjection_ = debugCamera_->GetViewProjection();
+
 	//viewProjection_ = railCamera_->GetViewProjection();
 
-	//行列の再計算
-	viewProjection_.UpdateMatrix();
 
 
 
@@ -250,9 +335,11 @@ void GameScene::Update()
 	//viewProjection_.target += kTargetMove;
 
 	debugText_->SetPos(50, 640);
-	debugText_->Printf("possibleMove:(%d)",
-		possibleMove);
-
+	debugText_->Printf("scene:(%d)",
+		scene);
+	debugText_->SetPos(50, 670);
+	debugText_->Printf(" deadMonsterCount:(%d)",
+		deadMonsterCount);
 }
 
 void GameScene::Draw() {
@@ -287,12 +374,21 @@ void GameScene::Draw() {
 		scene_->TitleDraw(viewProjection_);
 		break;
 	case::GAME:
+		scene_->GameDraw(viewProjection_);
 		player_->Draw(viewProjection_, textureHandle_);
 		//Monster_->Draw(viewProjection_);
 		skydome_->Draw(viewProjection_);
 		block_->Draw(viewProjection_);
 		select_->Draw(viewProjection_);
+		score_->Draw(viewProjection_);
 		break;
+	case::GAMECLEAR:
+		scene_->ClearDraw(viewProjection_);
+		break;
+	case::GAMEOVER:
+		scene_->LoseDraw(viewProjection_);
+		break;
+
 	default:
 		break;
 	}
@@ -317,7 +413,7 @@ void GameScene::Draw() {
 	//	break;
 	//}
 
-	
+
 	/// </summary>
 
 	// 3Dオブジェクト描画後処理
@@ -339,6 +435,25 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 
 #pragma endregion
+}
+
+void GameScene::resetDeath()
+{
+	//モンスターリストの取得
+	const std::list<std::unique_ptr<Monster>>& monsters = block_->GetMonsters();
+
+	//モンスターすべて
+	for (const std::unique_ptr<Monster>& monster : monsters)
+	{
+		monster->Dead();
+		//敵弾リストの取得
+		const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = monster->GetBullets();
+		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+		{
+			enemyBullet->Dead();
+		}
+	}
+
 }
 
 void GameScene::CheckAllCollisions()
@@ -366,8 +481,7 @@ void GameScene::CheckAllCollisions()
 	//モンスターリストの取得
 	const std::list<std::unique_ptr<Monster>>& monsters = block_->GetMonsters();
 
-	//敵弾リストの取得
-	//const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = ->GetBullets();
+
 
 #pragma region 勇者とモンスターの当たり判定
 	//勇者の座標
@@ -443,12 +557,20 @@ void GameScene::CheckAllCollisions()
 			//球と球の交差判定
 			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
 			{
-				//勇者の弾の衝突時コールバックを呼び出す
-				playerBullet->OnCollision();
+
 				//モンスターの衝突時コールバックを呼び出す
 				monster->OnCollision();
+				//勇者の弾の衝突時コールバックを呼び出す
+				playerBullet->OnCollision();
+				nowCollision = true;
 			}
 		}
+	}
+
+	if (nowCollision == true)
+	{
+		deadMonsterCount += 1;
+		nowCollision = false;
 	}
 #pragma endregion
 
@@ -484,7 +606,7 @@ void GameScene::CheckAllCollisions()
 
 					//壁の衝突時コールバックを呼び出す
 					//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
-					possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+					possibleMove[1] = block_->OnCollision(onCollisionX, onCollisionY);
 					monster->GetIsMove(possibleMove);
 				}
 			}
@@ -505,4 +627,241 @@ void GameScene::CheckAllCollisions()
 		//}
 	}
 #pragma endregion
+
+#pragma region モンスターの弾と勇者の当たり判定ok
+
+	//勇者の座標
+	posA = player_->GetWorldPosition();
+	//勇者の半径
+	radiusA = player_->GetRadius();
+
+	for (const std::unique_ptr<Monster>& monster : monsters)
+	{
+		//敵弾リストの取得
+		const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = monster->GetBullets();
+		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+		{
+			//モンスターの弾の座標
+			posB = enemyBullet->GetWorldPosition();
+			//モンスターの弾の半径
+			radiusB = enemyBullet->GetRadius();
+
+			//座標AとBの距離を求める
+			distance = posA - posB;
+
+			//球と球の交差判定
+			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 12)
+			{
+				enemyBullet->OnCollision();
+				player_->OnCollision();
+			}
+		}
+	}
+#pragma endregion
+
+#pragma region モンスターの弾と壁の当たり判定ok
+
+	//壁の座標
+	block_->GetWorldPosition(wallPos);
+
+	//壁の半径
+	radiusA = block_->GetRadius();
+
+	//壁とモンスタの弾のすべての当たり判定
+	for (const std::unique_ptr<Monster>& monster : monsters)
+	{
+		//敵弾リストの取得
+		const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = monster->GetBullets();
+		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+		{
+			//モンスターの弾の座標
+			posB = enemyBullet->GetWorldPosition();
+			//モンスターの弾の半径
+			radiusB = enemyBullet->GetRadius();
+
+			for (int i = 0; i < blockWidth; i++)
+			{
+				for (int j = 0; j < blockHeight; j++)
+				{
+					//座標AとBの距離を求める
+					distance = wallPos[i][j] - posB;
+
+					//球と球の交差判定
+					if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+					{
+						//当たった時のブロックのX番号,Y番号を保存
+						onCollisionX = i;
+						onCollisionY = j;
+
+						//壁の衝突時コールバックを呼び出す
+						//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
+						possibleMove[2] = block_->OnCollision(onCollisionX, onCollisionY);
+						//monster->GetIsMove(possibleMove);
+						if (possibleMove[2] == false)
+						{
+							enemyBullet->OnCollisionStop();
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+#pragma endregion
+
+#pragma region プレイヤーの弾と壁の当たり判定
+
+	//壁の座標
+	block_->GetWorldPosition(wallPos);
+
+	//壁の半径
+	radiusA = block_->GetRadius();
+
+	//壁とモンスタの弾のすべての当たり判定
+
+	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
+	{
+		//勇者の弾の座標
+		posB = playerBullet->GetWorldPosition();
+		//敵弾の半径
+		radiusB = playerBullet->GetRadius();
+
+		for (int i = 0; i < blockWidth; i++)
+		{
+			for (int j = 0; j < blockHeight; j++)
+			{
+				//座標AとBの距離を求める
+				distance = wallPos[i][j] - posB;
+
+				//球と球の交差判定
+				if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 19)
+				{
+					//当たった時のブロックのX番号,Y番号を保存
+					onCollisionX = i;
+					onCollisionY = j;
+
+					//壁の衝突時コールバックを呼び出す
+					//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
+					possibleMove[3] = block_->OnCollision(onCollisionX, onCollisionY);
+
+					if (possibleMove[3] == false)
+					{
+						playerBullet->OnCollisionStop();
+						break;
+					}
+				}
+			}
+		}
+	}
+#pragma endregion
+		//
+		//		//モンスターの座標
+		//		posB = monster->GetWorldPosition();
+		//		//モンスターの半径
+		//		radiusB = monster->GetRadius();
+		//		//座標AとBの距離を求める
+		//		distance = wallPos[i][j] - posB;
+
+		//		//壁の状態で分岐させる
+
+		//		//球と球の交差判定
+		//		if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+		//		{
+		//			//当たった時のブロックのX番号,Y番号を保存
+		//			onCollisionX = i;
+		//			onCollisionY = j;
+
+		//			//壁の衝突時コールバックを呼び出す
+		//			//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
+		//			possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+		//			monster->GetIsMove(possibleMove);
+		//		}
+		//	}
+		//}
+
+		//possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+
+		////進めるなら移動関数を呼び出す
+		//if (possibleMove == true)
+		//{
+		//	//モンスターの衝突時コールバックを呼び出す
+		//	monster->OnCollisionMove();
+		//}
+		////進めないなら方向転換関数を呼びだす
+		//else if (possibleMove == false)
+		//{
+		//	monster->ChangeDirection();
+		//}
+	
+
+
+	//for (const std::unique_ptr<Monster>& monster : monsters)
+	//{
+	//	//モンスターの座標
+	//	posA = monster->GetLocalPosition();
+	//	//モンスターの半径
+	//	radiusA = monster->GetRadius();
+
+	//	//敵弾リストの取得
+	//	const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = monster->GetBullets();
+
+	//	for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+	//	{
+	//		//勇者の弾の座標
+	//		posB = enemyBullet->GetLocalPosition();
+	//		//敵弾の半径
+	//		radiusB = enemyBullet->GetRadius();
+	//	}
+
+	//	//座標AとBの距離を求める
+	//	distance = posA - posB;
+
+	//	//球と球の交差判定
+	//	if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+	//	{
+	//		//敵弾の衝突時コールバックを呼び出す
+	//		monster->OnCollision();
+	//	}
+
+	//}
+
+}
+
+void GameScene::CheckScore()
+{
+	//モンスターリストの取得
+	const std::list<std::unique_ptr<Monster>>& monsters = block_->GetMonsters();
+
+	for (const std::unique_ptr<Monster>& monster : monsters)
+	{
+		scoreMonster += monster->GetScore();
+	}
+
+	//scoreBlock = block_->GetScore()
+	score_->GetScore(scoreMonster);
+
+}
+
+void GameScene::reset()
+{
+	airCamera_->Initialize(airPos, airAngle);
+	//スコアの初期化
+	score_->Initialize(model_);
+	//シーン関連のものを初期化
+	scene_->Initialize(model_);
+	//ブロックの初期化
+	block_->Initialize(model_, monsterPos);
+	//選択カーソルの初期化
+	select_->Initialize(model_);
+	//自キャラの初期化
+	player_->Initialize(model_, textureHandle_);
+	//天球の初期化
+	skydome_->Initialize(modelSkydome_);
+	//カメラ視点座標を設定
+	viewProjection_.eye = { 0,0,0 };
+
+	// ビュープロジェクションの初期化
+	viewProjection_.Initialize();
+	limitTimer_ = kLifeTime;
+	deadMonsterCount = 0;
 }

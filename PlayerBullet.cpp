@@ -24,18 +24,24 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position, const Vecto
 	velocity_ = velocity;
 
 	//ワールドトランスフォームの初期化
-	bulletWorldTransform_.Initialize();
+	worldTransform_.Initialize();
 
 	//引数で受け取った初期座標をセット
-	bulletWorldTransform_.translation_= position;
+	worldTransform_.translation_= position;
+
+	canMoved = true;
 	
 }
 
 void PlayerBullet::Update()
 {
-	//座標を移動させる(1フレーム分の移動量を足しこむ)
-	bulletWorldTransform_.translation_ += velocity_;
+	if (canMoved == true)
+	{
+		//座標を移動させる(1フレーム分の移動量を足しこむ)
+		worldTransform_.translation_ += velocity_;
 
+	}
+	
 #pragma region 行列の更新
 	//スケーリング用行列を宣言
 	Matrix4 matScale;
@@ -55,21 +61,21 @@ void PlayerBullet::Update()
 	matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);
 
 	//回転行列を行列に設定
-	matRot.Matrix4RotationX(bulletWorldTransform_.rotation_.x);
-	matRot.Matrix4RotationY(bulletWorldTransform_.rotation_.y);
-	matRot.Matrix4RotationZ(bulletWorldTransform_.rotation_.z);
+	matRot.Matrix4RotationX(worldTransform_.rotation_.x);
+	matRot.Matrix4RotationY(worldTransform_.rotation_.y);
+	matRot.Matrix4RotationZ(worldTransform_.rotation_.z);
 
-	bulletWorldTransform_.matWorld_.IdentityMatrix();
+	worldTransform_.matWorld_.IdentityMatrix();
 
 	//座標を行列に設定
 	matTrans.Matrix4Translation(
-		bulletWorldTransform_.translation_.x,
-		bulletWorldTransform_.translation_.y,
-		bulletWorldTransform_.translation_.z);
+		worldTransform_.translation_.x,
+		worldTransform_.translation_.y,
+		worldTransform_.translation_.z);
 
-	bulletWorldTransform_.matWorld_ = matScale;
-	bulletWorldTransform_.matWorld_ *= matRot;
-	bulletWorldTransform_.matWorld_ *= matTrans;
+	worldTransform_.matWorld_ = matScale;
+	worldTransform_.matWorld_ *= matRot;
+	worldTransform_.matWorld_ *= matTrans;
 
 	//WorldMatrix(bulletWorldTransform_.matWorld_, matScale, matRot, matTrans);
 
@@ -80,7 +86,7 @@ void PlayerBullet::Update()
 	}*/
 
 	//ワールド行列を転送
-	bulletWorldTransform_.TransferMatrix();
+	worldTransform_.TransferMatrix();
 
 #pragma endregion
 
@@ -89,14 +95,19 @@ void PlayerBullet::Update()
 		isDead_ = true;
 	}
 
-	debugText_->SetPos(50, 400);
-	debugText_->Printf("translation_.z) : %f", bulletWorldTransform_.translation_.z);
+	/*debugText_->SetPos(50, 400);
+	debugText_->Printf("translation_.z) : %f", bulletWorldTransform_.translation_.z);*/
 
+}
+
+void PlayerBullet::OnCollisionStop()
+{
+	canMoved = false;
 }
 
 void PlayerBullet::Draw(const ViewProjection& viewProjection)
 {
-	bulletModel_->Draw(bulletWorldTransform_, viewProjection, bulletHandle_);
+	bulletModel_->Draw(worldTransform_, viewProjection, bulletHandle_);
 }
 
 void PlayerBullet::OnCollision()
@@ -114,11 +125,20 @@ float PlayerBullet::GetRadius()
 	return bulletRadius;
 }
 
+Vector3 PlayerBullet::GetWorldPosition()
+{
+	worldResultTransform.x = worldTransform_.matWorld_.m[3][0];
+	worldResultTransform.y = worldTransform_.matWorld_.m[3][1];
+	worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
+	return worldResultTransform;
+}
 Vector3 PlayerBullet::GetLocalPosition()
 {
 	//ワールド座標を入れる変数
 	Vector3 worldPos;
 	//ワールド行列の平行移動成分を取得(ワールド座標)
-	worldPos = bulletWorldTransform_.translation_;
+	worldPos = worldTransform_.translation_;
 	return worldPos;
 }
+
+

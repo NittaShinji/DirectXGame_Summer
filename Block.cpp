@@ -1,4 +1,5 @@
 #include "Block.h"
+#include "Player.h"
 #include <cassert>
 
 Block::Block() {}
@@ -12,6 +13,10 @@ void Block::Initialize(Model* model, const Vector3& position)
 
 	//モデルをインプット
 	model_ = model;
+
+	audio_ = Audio::GetInstance();
+
+	iceAxAudio_ = audio_->LoadWave("iceAx.wav");
 
 	//テクスチャ読み込み
 	blockHandle_ = TextureManager::Load("testBlock.png");
@@ -39,6 +44,12 @@ void Block::Initialize(Model* model, const Vector3& position)
 			{
 				form_[i][j] = Form::IsSelected;
 			}
+			else
+			{
+				form_[i][j] = Form::Block;
+			}
+
+
 
 			//モンスターの生成時間の設定
 			birthTimer_[i][j] = kBirthTime;
@@ -64,25 +75,25 @@ void Block::Initialize(Model* model, const Vector3& position)
 	changedSelect = true;
 	prevBlockX = 0;
 	birthMonster = false;
-
+	breakWallCount = false;
+	
 }
 
 //更新
 void Block::Update()
 {
 	//monster_.remove_if([]);
-
+	
 	monsters_.remove_if([](std::unique_ptr<Monster>& monster) {
 		return monster->IsDead();
 		});
-
 
 	for (int i = 0; i < blockWidth; i++)
 	{
 		for (int j = 0; j < blockHeight; j++)
 		{
 #pragma region カーソル処理
-			if (input_->PushKey(DIK_RIGHT) && i < blockWidth && changedSelect == true)
+			if (input_->PushKey(DIK_RIGHT) && i < blockWidth - 1 && changedSelect == true)
 			{
 				//前カーソルの状態からカーソル状態をなくして、カーソルがつく前の状態にする。
 				if (form_[i][j] == Form::IsSelected)
@@ -168,7 +179,7 @@ void Block::Update()
 					}
 				}
 			}
-			else if (input_->PushKey(DIK_UP) && j < blockHeight && changedSelect == true)
+			else if (input_->PushKey(DIK_UP) && j < blockHeight - 1 && changedSelect == true)
 			{
 				//前カーソルの状態からカーソル状態をなくして、カーソルがつく前の状態にする。
 				if (form_[i][j] == Form::IsSelected)
@@ -265,14 +276,19 @@ void Block::Update()
 
 			if (input_->PushKey(DIK_SPACE) && form_[i][j] == Form::IsSelected && wasChangedSelect == true)
 			{
-				form_[i][j] = Form::WasSelected;
-				wasChangedSelect = false;
-				//breakBlock[i][j] = true;
-				breakBlock[i][j] = true;
-				//breakBlock = true;
+				if (form_[i + 1][j] == Form::None || form_[i][j + 1] == Form::None || form_[i][prevBlockY] == Form::None || form_[prevBlockX][j] == Form::None
+					|| form_[i + 1][j] == Form::WasSelected || form_[i][j + 1] == Form::WasSelected || form_[i][prevBlockY] == Form::WasSelected || form_[prevBlockX][j] == Form::WasSelected || i == 0 || j == 0 || i == (blockWidth - 1) || j == (blockHeight - 1))
+				{
+					audio_->PlayWave(iceAxAudio_, false, 1.0f);
+					form_[i][j] = Form::WasSelected;
+					wasChangedSelect = false;
+					//breakBlock[i][j] = true;
+					breakBlock[i][j] = true;
+					//breakBlock = true;
+				}
 			}
 
-			if (input_->PushKey(DIK_1))
+			/*if (input_->PushKey(DIK_1))
 			{
 				if (j > 0 && j < 3)
 				{
@@ -281,7 +297,7 @@ void Block::Update()
 						form_[i][j] = Form::None;
 					}
 				}
-			}
+			}*/
 
 			if (breakBlock[i][j] == true)
 			{
@@ -337,6 +353,7 @@ void Block::Update()
 		Birth();
 		//birthTimer_[i][j] = kBirthTime;
 		birthMonster = false;
+		breakWallCount += 1;
 	}
 
 	//モンスター更新
@@ -430,9 +447,9 @@ void Block::Update()
 	debugText_->Printf("worldTranslation[0]:(%f,%f,%f)",
 		worldTransforms_[1][1].translation_.x, worldTransforms_[1][1].translation_.y, worldTransforms_[1][1].translation_.z);*/
 
-	debugText_->SetPos(50, 200);
-	debugText_->Printf("Form:(%d)",
-		form_[1][1]);
+	/*debugText_->SetPos(50, 400);
+	debugText_->Printf("breakWallCount:(%d)",
+		breakWallCount);*/
 
 	/*debugText_->SetPos(50, 250);
 	debugText_->Printf("breakBlock[1][0]:(%d)",
@@ -444,7 +461,7 @@ void Block::Update()
 	debugText_->Printf("breakBlock[1][2]:(%d)",
 		breakBlock[1][2]);*/
 
-	debugText_->SetPos(50, 350);
+	/*debugText_->SetPos(50, 350);
 	debugText_->Printf("birthTimer_[1][0]:(%d)",
 		birthTimer_[1][0]);
 	debugText_->SetPos(50, 380);
@@ -462,7 +479,7 @@ void Block::Update()
 		breakBlock[1][1]);
 	debugText_->SetPos(50, 510);
 	debugText_->Printf("birthMonster[1][2]:(%d)",
-		breakBlock[1][2]);
+		breakBlock[1][2]);*/
 #pragma endregion
 
 }
@@ -612,6 +629,11 @@ void Block::Birth()
 	monsters_.push_back(std::move(newMonster));
 }
 
+void Block::IsMonsterDead()
+{
+	
+}
+
 //bool Block::OnCollision(Vector3 wallPos[blockWidth][blockHeight],const int x, const int y)
 bool Block::OnCollision(const int x, const int y)
 {
@@ -679,4 +701,22 @@ int Block::GetBlockHight()
 	//ワールド行列の平行移動成分を取得(ワールド座標)
 	blockHight_ = blockHeight;
 	return blockHight_;
+}
+
+int Block::GetScore()
+{
+	return score;
+}
+
+bool Block::GetBreakAll()
+{
+	if (breakWallCount == (blockWidth * blockHeight))
+	{
+		return true;
+	}
+}
+
+void Block::IsSceneChanged()
+{
+	comeDeath = true;
 }

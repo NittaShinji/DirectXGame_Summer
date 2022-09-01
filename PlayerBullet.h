@@ -22,16 +22,23 @@ public:
 	// 衝突を検知したら呼び出されるコールバック関数
 	void OnCollision();
 
+	void OnCollisionStop();
+
 	//半径を取得
 	float GetRadius();
 
 	//ワールド座標を取得
 	Vector3 GetLocalPosition();
 
+	//ワールド座標を取得
+	Vector3 GetWorldPosition();
+
+
+
 private:
 
 	// ワールド変換データ
-	WorldTransform bulletWorldTransform_;
+	WorldTransform worldTransform_;
 	// モデル
 	Model* bulletModel_ = nullptr;
 
@@ -55,5 +62,10 @@ private:
 	// デバックテキスト
 	DebugText* debugText_ = nullptr;
 
+	//移動できるかどうか
+	int canMoved;
+
+	//結果を入れるためのベクトル
+	Vector3 worldResultTransform;
 };
 

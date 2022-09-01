@@ -43,8 +43,8 @@ public:
 
 	//ローカル座標を取得
 	Vector3 GetLocalPosition();
-	////ワールド座標を取得
-	//Vector3 GetWorldPosition();
+	//ワールド座標を取得
+	Vector3 GetWorldPosition();
 
 	//半径を取得
 	float GetRadius();
@@ -57,6 +57,12 @@ public:
 
 	//カメラのワールド行列(ポインタ)を渡すためのSetter
 	void SetRailCamera(std::shared_ptr<RailCamera> railCamera) { railCamera_ = railCamera; }
+
+	bool loseGame();
+
+	void TimerInitialize();
+
+	void ReadyFire();
 
 private:
 	// ワールド変換データ
@@ -74,9 +80,17 @@ private:
 	//弾
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
 	//半径
-	const float radius = 0.5f;
+	const float radius = 4.0f;
 	//自キャラ
 	std::shared_ptr<RailCamera> railCamera_;
 	//ワールド座標計算用の変数
 	Vector3 worldResultTransform;
+
+	//プレイヤーのHP
+	int playerHp;
+
+	//発射タイマー
+	int bulletCoolTimer;
+	//発射間隔
+	static const int kFireInterval = 10;
 };

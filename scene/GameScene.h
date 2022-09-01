@@ -16,6 +16,8 @@
 #include "Block.h"
 #include "Select.h"
 #include "Scene.h"
+#include "Score.h"
+#include "AirCamera.h"
 
 #include <memory>
 
@@ -28,7 +30,8 @@ enum SceneName
 	TITLE,
 	GAME,
 	PAUSE,
-	GAMECLEAR
+	GAMECLEAR,
+	GAMEOVER,
 };
 /// </summary>
 class GameScene {
@@ -71,6 +74,14 @@ class GameScene {
 	//衝突判定と応答
 	void CheckAllCollisions();
 
+	//スコア計算
+	void CheckScore();
+
+	//デスフラグを渡す
+	void resetDeath();
+
+	void reset();
+
   private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -85,7 +96,8 @@ class GameScene {
 	Matrix4 frontVec;
 
 	//オーディオ
-	uint32_t clickAudio_ = 0;
+	uint32_t clickAudio_ = 0u;
+	
 
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
@@ -136,27 +148,41 @@ class GameScene {
 	//カーソルの生成
 	std::unique_ptr<Select> select_;
 
+	//スコアクラスの作成
+	std::unique_ptr<Score> score_;
+
+	//エアーカメラクラスの作成
+	std::unique_ptr<AirCamera> airCamera_;
+
 	//シーンクラスの作成
 	//Scene* scene;
 	std::unique_ptr<Scene> scene_;
+
+	//Monster* monster__;
 
 	//シーン
 	int scene;
 
 	//敵の初期座標
-	Vector3 enemyPos = { 10,0,40 };
+	//Vector3 enemyPos = { 10,0,45 };
 
 	//モンスターの初期座標
-	Vector3 monsterPos = { 0,0,0 };
+	Vector3 monsterPos = { -100,5,15 };
 
 	//受け取り用の壁変数
 	Vector3 wallPos[blockWidth][blockHeight];
 
-	//レールカメラの初期座標
-	Vector3 railPos = { 0,0,0 };
+	////レールカメラの初期座標
+	//Vector3 railPos = { 0,0,0 };
 
-	//レールカメラの初期座標
-	Vector3 angle = { 0,0,0 };
+	////レールカメラの初期座標
+	//Vector3 angle = { 0,0,0 };
+
+	//空気カメラの初期座標
+	Vector3 airPos = { 0,250,-150 };
+
+	//空気カメラの初期座標
+	Vector3 airAngle = { 1.4,0,0 };
 
 	//AB間の距離
 	Vector3 distance;
@@ -168,6 +194,28 @@ class GameScene {
 	float viewAngle = 0.0f;
 
 	//モンスターの移動をしていいのかフラグ
-	bool possibleMove;
+	bool possibleMove[4];
+
+	//スコア関係
+	int scoreMonster;
+	int scoreBlock;
+	int score;
+
+	//壁が何枚壊れたか
+	int breakWallCount_;
+
+	//敵が弾とぶつかったよフラグ
+	bool nowCollision;
+	
+	//敵が何体消えたか
+	int deadMonsterCount;
+
+	//寿命
+	static const int32_t kLifeTime = 800 * 5;
+
+	//デスタイマー
+	int32_t limitTimer_;
+	//デスフラグ
+	bool isDead_ = false;
 
 };

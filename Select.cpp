@@ -38,7 +38,6 @@ void Select::Update()
 	
 	worldTransform_.translation_ = boxPos;
 	
-
 #pragma region 行列の更新
 	//スケーリング用行列を宣言
 	Matrix4 matScale;

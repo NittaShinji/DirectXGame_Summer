@@ -23,8 +23,10 @@ void Player::Initialize(Model* model, uint32_t textureHandle)
 
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
-	worldTransform_.translation_ = { -10,10,0 };
+	worldTransform_.translation_ = { 0,0,0 };
 	/*worldTransform_.parent_ = &railWorldTransform;*/
+
+	playerHp = 1;
 
 }
 
@@ -45,7 +47,7 @@ void Player::Update()
 	// キャラクターの移動ベクトル
 	Vector3 playerRoot = { 0,0,0 };
 
-	if (input_->PushKey(DIK_C))
+	/*if (input_->PushKey(DIK_C))
 	{
 		playerRoot.y = rootSpeed;
 	}
@@ -56,15 +58,15 @@ void Player::Update()
 	else
 	{
 		playerRoot.y = 0.0f;
-	}
+	}*/
 
-	worldTransform_.rotation_.y += playerRoot.y;
+	//worldTransform_.rotation_.y += playerRoot.y;
 
 #pragma endregion
 
 #pragma region キャラクターの移動処理
 
-	const float playerSpeed = 0.05f;
+	const float playerSpeed = 0.5f;
 
 	// キャラクターの移動ベクトル
 	Vector3 playerMove = { 0,0,0 };
@@ -82,7 +84,7 @@ void Player::Update()
 		playerMove.x = 0.0f;
 	}
 
-	if (input_->PushKey(DIK_W))
+	/*if (input_->PushKey(DIK_W))
 	{
 		playerMove.y = playerSpeed;
 	}
@@ -93,13 +95,13 @@ void Player::Update()
 	else
 	{
 		playerMove.y = 0.0f;
-	}
+	}*/
 
-	if (input_->PushKey(DIK_E))
+	if (input_->PushKey(DIK_W))
 	{
 		playerMove.z = playerSpeed;
 	}
-	else if (input_->PushKey(DIK_Q))
+	else if (input_->PushKey(DIK_S))
 	{
 		playerMove.z = -playerSpeed;
 	}
@@ -116,14 +118,14 @@ void Player::Update()
 #pragma region 移動制限
 
 	//移動限界座標
-	const float kMoveLimitX = 34.0f;
-	const float kMoveLimitY = 34.0f;
+	const float kMoveLimitX = 190.0f;
+	const float kMoveLimitZ = -20.0f;
 
 	//範囲を超えない処理
 	worldTransform_.translation_.x = max(worldTransform_.translation_.x, -kMoveLimitX);
 	worldTransform_.translation_.x = min(worldTransform_.translation_.x, +kMoveLimitX);
-	worldTransform_.translation_.y = max(worldTransform_.translation_.y, -kMoveLimitY);
-	worldTransform_.translation_.y = min(worldTransform_.translation_.y, +kMoveLimitY);
+	worldTransform_.translation_.z = max(worldTransform_.translation_.z, -kMoveLimitZ);
+	worldTransform_.translation_.z = min(worldTransform_.translation_.z, +kMoveLimitZ);
 
 #pragma endregion
 
@@ -156,9 +158,9 @@ void Player::Update()
 	Matrix4 matTrans = MathUtility::Matrix4Identity();
 
 	//キャラクター移動処理
-	float scaleX = 1.0f;
-	float scaleY = 1.0f;
-	float scaleZ = 1.0f;
+	float scaleX = 9.0f;
+	float scaleY = 9.0f;
+	float scaleZ = 9.0f;
 
 	//スケーリング倍率を行列に設定
 	matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);
@@ -200,9 +202,9 @@ void Player::Update()
 #pragma endregion
 
 
-	debugText_->SetPos(50, 130);
+	/*debugText_->SetPos(50, 130);
 	debugText_->Printf("worldTranslation[0]:(%f,%f,%f)",
-		worldTransform_.translation_.x, worldTransform_.translation_.y, worldTransform_.translation_.z);
+		worldTransform_.translation_.x, worldTransform_.translation_.y, worldTransform_.translation_.z);*/
 
 #ifdef DEBUG
 
@@ -215,34 +217,44 @@ void Player::Update()
 
 void Player::Attack()
 {
-	//弾の生成し、初期化
-	if (input_->PushKey(DIK_RETURN))
+	//発射タイマーをカウントダウン
+	bulletCoolTimer--;
+	//指定時間に達した
+	if (bulletCoolTimer <= 0)
 	{
-		////自キャラの座標をコピー
-		//Vector3 position = worldTransform_.translation_;
+		//弾の生成し、初期化
+		if (input_->PushKey(DIK_RETURN))
+		{
+			////自キャラの座標をコピー
+			//Vector3 position = worldTransform_.translation_;
 
-		//　弾の速度
-		const float kBulletSpeed = 1.0f;
-		Vector3 velocity(0, 0, kBulletSpeed);
+			//　弾の速度
+			const float kBulletSpeed = 1.0f;
+			Vector3 velocity(0, 0, kBulletSpeed);
 
-		// 速度ベクトルを自機の向きに合わせて回転させる
-		velocity = Root(velocity, worldTransform_);
+			// 速度ベクトルを自機の向きに合わせて回転させる
+			velocity = Root(velocity, worldTransform_);
 
-		//弾を生成し、初期化
-		//PlayerBullet* newBullet = new PlayerBullet();
-		std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerBullet>();
-		//newBullet->Initialize(model_ ,worldTransform_.translation_,velocity);
-		 
-		//自機の平行移動成分の情報を取得
-		worldResultTransform.x = worldTransform_.matWorld_.m[3][0];
-		worldResultTransform.y = worldTransform_.matWorld_.m[3][1];
-		worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
+			//弾を生成し、初期化
+			//PlayerBullet* newBullet = new PlayerBullet();
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerBullet>();
+			//newBullet->Initialize(model_ ,worldTransform_.translation_,velocity);
 
-		newBullet->Initialize(model_ , worldResultTransform,velocity);
+			//自機の平行移動成分の情報を取得
+			worldResultTransform.x = worldTransform_.matWorld_.m[3][0];
+			worldResultTransform.y = worldTransform_.matWorld_.m[3][1];
+			worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
 
-		//弾を登録する
-		//bullet_.reset(newBullet);
-		bullets_.push_back(std::move(newBullet));
+			newBullet->Initialize(model_, worldResultTransform, velocity);
+
+			//弾を登録する
+			//bullet_.reset(newBullet);
+			bullets_.push_back(std::move(newBullet));
+		}
+
+		//発射タイマーを初期化
+		bulletCoolTimer = kFireInterval;
+
 	}
 }
 
@@ -255,6 +267,17 @@ void Player::Draw(ViewProjection& viewProjection, uint32_t textureHandle)
 	{
 		bullet->Draw(viewProjection);
 	}
+}
+
+void Player::TimerInitialize()
+{
+	//発射タイマーを初期化
+	bulletCoolTimer = kFireInterval;
+}
+
+void Player::ReadyFire()
+{
+
 }
 
 Vector3 Player::Root(Vector3 velocity, WorldTransform worldTransform_)
@@ -282,6 +305,14 @@ Vector3 Player::GetLocalPosition()
 	return worldPos;
 }
 
+Vector3 Player::GetWorldPosition()
+{
+	worldResultTransform.x = worldTransform_.matWorld_.m[3][0];
+	worldResultTransform.y = worldTransform_.matWorld_.m[3][1];
+	worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
+	return worldResultTransform;
+}
+
 float Player::GetRadius()
 {
 	//半径を入れる変数
@@ -291,4 +322,14 @@ float Player::GetRadius()
 	return playerRadius;
 }
 
-void Player::OnCollision(){}
+void Player::OnCollision(){
+	playerHp -= 1;
+}
+
+bool Player::loseGame()
+{
+	if (playerHp == 0)
+	{
+		return true;
+	}
+}

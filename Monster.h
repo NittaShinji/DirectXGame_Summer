@@ -11,8 +11,7 @@
 #include <list>
 #include <cassert>
 
-//自機クラスの前方宣言
-//class Player;
+
 //class Block;
 
 class Monster
@@ -53,7 +52,7 @@ public:
 	//方向計算
 	Vector3 Root(Vector3 velocity, WorldTransform worldTransform_);
 	//発射間隔
-	static const int kFireInterval = 60;
+	static const int kFireInterval = 180;
 	//描画
 	void Draw(const ViewProjection& viewProjection);
 
@@ -64,8 +63,8 @@ public:
 	void PhsaeLeave();
 
 	//void SetPlayer(std::unique_ptr<Player> player) { player_ = player; }
-	/*void SetPlayer(std::shared_ptr<Player> player) { player_ = player; }
-	void SetPlayer(std::shared_ptr<Block> block) { block_ = block; }*/
+	
+	//void SetPlayer(std::shared_ptr<Block> block) { block_ = block; }
 
 	// 勇者の弾との衝突を検知したら呼び出されるコールバック関数
 	void OnCollision();
@@ -96,6 +95,10 @@ public:
 	bool IsDead() const { return isDead_; }
 
 	void GetIsMove(bool possibleMove);
+
+	int GetScore();
+
+	void Dead();
 
 private:
 
@@ -128,12 +131,12 @@ private:
 	//弾
 	std::list<std::unique_ptr<EnemyBullet>> bullets_;
 	//発射タイマー
-	int32_t bulletCoolTimer = 0;
+	int32_t bulletCoolTimer;
 
-	////自キャラ
-	//std::shared_ptr<Player> player_;
+	//自キャラ
+	/*std::shared_ptr<Player> player_ = nullptr;*/
 
-	////ブロック情報
+	//ブロック情報
 	//std::shared_ptr<Block> block_;
 
 	//半径
@@ -166,5 +169,10 @@ private:
 	//ワールド座標を渡す用の変数
 	Vector3 worldResultTransform;
 
+	//スコア
+	int score;
+
+	//ループ用の死ぬフラグ
+	int firstDead = true;
 };
 

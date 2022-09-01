@@ -34,9 +34,9 @@ void Skydome::Update()
 	Matrix4 matTrans = MathUtility::Matrix4Identity();
 
 	//キャラクター移動処理
-	float scaleX = 300.0f;
-	float scaleY = 300.0f;
-	float scaleZ = 300.0f;
+	float scaleX = 600.0f;
+	float scaleY = 600.0f;
+	float scaleZ = 600.0f;
 
 	//スケーリング倍率を行列に設定
 	matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);

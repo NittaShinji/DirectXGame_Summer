@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Audio.h"
 #include "WorldTransform.h"
 #include "Model.h"
 #include "Input.h"
@@ -8,8 +9,8 @@
 #include <list>
 #include <memory>
 
-static const int blockWidth = 30;
-static const int blockHeight = 30;
+static const int blockWidth = 13;
+static const int blockHeight = 13;
 
 class Block
 {
@@ -74,6 +75,17 @@ public:
 	//壁の縦の長さを渡す
 	int GetBlockHight();
 
+	//スコアを渡す
+	int GetScore();
+
+	int GetBreakWallCount();
+
+	bool GetBreakAll();
+
+	void IsSceneChanged();
+
+	void IsMonsterDead();
+
 private:
 
 	// ワールド変換データ
@@ -87,11 +99,16 @@ private:
 	// デバックテキスト
 	DebugText* debugText_ = nullptr;
 
+	Audio* audio_ = nullptr;
+
 	// テクスチャハンドル
 	uint32_t blockHandle_ = 0u;
 	uint32_t selectHandle_ = 0u;
 	uint32_t wasSelectHandle_ = 0u;
 	uint32_t slimeHandle_ = 0u;
+
+	//音楽
+	uint32_t iceAxAudio_ = 0u;
 
 	//状態変化変数
 	Form form_[blockWidth][blockHeight] = { Form::Block };
@@ -157,5 +174,17 @@ private:
 	//半径
 	const float radius = 4.0f;
 
+	//スコア
+	int score;
+
+	//壁が何枚壊れたか
+	int breakWallCount;
+
+	//デスフラグの管理
+	int comeDeath;
+
+	//int isBreakWall[blockWidth][blockHeight];
+
+	
 };
 
