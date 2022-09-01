@@ -36,7 +36,7 @@ public:
 	//モンスターの向き
 	enum  class Direction
 	{
-		Right,
+		Right = 0,
 		Left,
 		Up,
 		Down,
@@ -78,8 +78,12 @@ public:
 	//弾リストを取得
 	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() { return bullets_; }
 
-	//ワールド座標を取得
+	//ローカル座標を取得
 	Vector3 GetLocalPosition();
+
+	//ワールド座標を取得
+	Vector3 GetWorldPosition();
+
 
 	//移動
 	void Move();
@@ -133,7 +137,7 @@ private:
 	//std::shared_ptr<Block> block_;
 
 	//半径
-	const float radius = 32.0f;
+	const float radius = 50.0f;
 
 	//モンスターの生成座標
 	//Vector3 boxPos;
@@ -158,6 +162,9 @@ private:
 	//方向転換する際の被らないようのチェック変数
 	bool checkDirectionR = false;
 	bool checkDirectionL = false;
+
+	//ワールド座標を渡す用の変数
+	Vector3 worldResultTransform;
 
 };
 

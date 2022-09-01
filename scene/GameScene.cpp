@@ -30,66 +30,90 @@ void GameScene::Initialize() {
 	//ファイル名を指定してテクスチャを読み込む
 	textureHandle_ = TextureManager::Load("maou4.png");
 
+	//audio_->LoadWave("GetSE.wav");
+	clickAudio_ = audio_->LoadWave("GetSE.wav");
+
 	// 3Dモデルの生成
 	model_ = Model::Create();
-	modelSkydome_ = Model::CreateFromOBJ("skydome", true);
+	modelSkydome_ = Model::CreateFromOBJ("BackGround", true);
 
 	////自キャラの生成
 	//player_ = new Player();
 	////自キャラの初期化
 	//player_->Initialize(model_ ,textureHandle_);
-	
+
 	//レールカメラの生成
 	//RailCamera* newRailCamera = new RailCamera;
 	//railCamera_.reset(newRailCamera);
 	////レールカメラの初期化
 	//railCamera_->Initialize(railPos, angle);
 
+	//シーン関連のもの
+	Scene* newScene = new Scene;
+	scene_.reset(newScene);
+
 	//ブロックの生成
-	Block* newBlock = new Block();
+	Block* newBlock = new Block;
 	block_.reset(newBlock);
-	//ブロックの初期化
-	block_->Initialize(model_, monsterPos);
 
 	//カーソルの生成
 	Select* newSelect = new Select;
 	select_.reset(newSelect);
-	select_->Initialize(model_);
 
 	//自キャラの生成と登録
 	Player* newPlayer = new Player;
 	player_.reset(newPlayer);
+
+	//天球の生成
+	Skydome* newSkydome = new Skydome;
+	skydome_.reset(newSkydome);
+
 	////自キャラにレールカメラのアドレスを渡す
 	//player_->SetRailCamera(railCamera_);
-	//自キャラの初期化
-	player_->Initialize(model_, textureHandle_);
-	
+
 	//敵の生成
 	//Monster* newMonster = new Monster();
 	//Monster_.reset(newMonster);	
 	////敵の初期化
 	//Monster_->Initialize(model_,enemyPos);
-
-	//天球の生成
-	Skydome* newSkydome = new Skydome();
-	skydome_.reset(newSkydome);
-	//天球の初期化
-	skydome_->Initialize(modelSkydome_);
+	//monster_ = new Monster;
+	//敵キャラに自キャラのアドレスを渡す
+	//Monster_->SetPlayer(player_);
 
 	
-	//monster_ = new Monster;
+
+	//シーン関連のものを初期化
+	scene_->Initialize(model_);
+	//ブロックの初期化
+	block_->Initialize(model_, monsterPos);
+	//選択カーソルの初期化
+	select_->Initialize(model_);
+	//自キャラの初期化
+	player_->Initialize(model_, textureHandle_);
+	//天球の初期化
+	skydome_->Initialize(modelSkydome_);
 
 	//カーソルにブロックのアドレスを渡す
 	select_->SetBlock(block_);
 
-	//敵キャラに自キャラのアドレスを渡す
-	//Monster_->SetPlayer(player_);
-	
+	//カメラ視点座標を設定
+	viewProjection_.eye = { 0,0,-150 };
+
+	// ビュープロジェクションの初期化
+	viewProjection_.Initialize();
+
+	//// 軸方向表示を有効にする
+	//AxisIndicator::GetInstance()->SetVisible(true);
+
+	//// 軸方向表示が参照するビュープロジェクションを指定する (アドレス渡し)
+	//AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
+
+	//// ライン描画が参照するビュープロジェクションを指定する (アドレス渡し)
+	//PrimitiveDrawer::GetInstance()->SetViewProjection(&viewProjection_);
+
 	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 
-	//カメラ視点座標を設定
-	viewProjection_.eye = { 0,0,-150 };
 
 	//カメラ注視点座標を設定
 	//viewProjection_.target = { 10,0,0 };
@@ -108,38 +132,84 @@ void GameScene::Initialize() {
 	////ファークリップ距離を設定
 	//viewProjection_.farZ = 53.0f;
 
-	// ビュープロジェクションの初期化
-	viewProjection_.Initialize();
 
-	// 軸方向表示を有効にする
-	AxisIndicator::GetInstance()->SetVisible(true);
-
-	// 軸方向表示が参照するビュープロジェクションを指定する (アドレス渡し)
-	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
-	
-	// ライン描画が参照するビュープロジェクションを指定する (アドレス渡し)
-	PrimitiveDrawer::GetInstance()->SetViewProjection(&viewProjection_);
 }
 
-void GameScene::Update() 
+void GameScene::Update()
 {
 	assert(player_);
 	//assert(Monster_);
 	assert(block_);
 
-	debugCamera_->Update();
-	player_->Update();
-	block_->Update();
-	//Monster_->Update();
-	skydome_->Update();
-	select_->Update();
-	//railCamera_->Update();
+	
+
+	switch (scene)
+	{
+	case::TITLE:
+		debugCamera_->Update();
+		scene_->Update();
+
+		if (input_->PushKey(DIK_G))
+		{
+			audio_->PlayWave(clickAudio_,false,1.0f);
+			scene = GAME;
+		}
+
+		break;
+
+	case::GAME:
+		debugCamera_->Update();
+		scene_->Update();
+		player_->Update();
+		block_->Update();
+		//Monster_->Update();
+		skydome_->Update();
+		select_->Update();
+		//railCamera_->Update();
+
+		CheckAllCollisions();
+
+		break;
+
+	default:
+		break;
+	}
+	//switch (scene)
+	//{
+	//case::Title:
+	//	debugCamera_->Update();
+	//	scene_->Update();
+	//	break;
+
+	//case::Game:
+
+	//	player_->Update();
+	//	block_->Update();
+	//	//Monster_->Update();
+	//	skydome_->Update();
+	//	select_->Update();
+	//	//railCamera_->Update();
+
+
+	//	CheckAllCollisions();
+
+	//	debugText_->SetPos(50, 640);
+	//	debugText_->Printf("possibleMove:(%d)",
+	//		possibleMove);
+
+	//	break;
+
+	//default:
+	//	break;
+	//}
 
 	viewProjection_ = debugCamera_->GetViewProjection();
 	//viewProjection_ = railCamera_->GetViewProjection();
-	
+
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
+
+
 
 	////視点移動処理
 	//Vector3 eyeMove = { 0.0f,0.0f,0.0f};
@@ -179,11 +249,10 @@ void GameScene::Update()
 	////注視点移動(ベクトルの加算)
 	//viewProjection_.target += kTargetMove;
 
-	CheckAllCollisions();
-
 	debugText_->SetPos(50, 640);
 	debugText_->Printf("possibleMove:(%d)",
 		possibleMove);
+
 }
 
 void GameScene::Draw() {
@@ -211,13 +280,44 @@ void GameScene::Draw() {
 
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
-	
-	player_->Draw(viewProjection_,textureHandle_);
-	//Monster_->Draw(viewProjection_);
-	skydome_->Draw(viewProjection_);
-	block_->Draw(viewProjection_);
-	select_->Draw(viewProjection_);
 
+	switch (scene)
+	{
+	case::TITLE:
+		scene_->TitleDraw(viewProjection_);
+		break;
+	case::GAME:
+		player_->Draw(viewProjection_, textureHandle_);
+		//Monster_->Draw(viewProjection_);
+		skydome_->Draw(viewProjection_);
+		block_->Draw(viewProjection_);
+		select_->Draw(viewProjection_);
+		break;
+	default:
+		break;
+	}
+
+	//switch 
+
+	//switch (scene)
+	//{
+	//case::Title:
+	//	scene_->Draw(viewProjection_);
+
+	//	break;
+	//case::Game:
+	//	player_->Draw(viewProjection_, textureHandle_);
+	//	//Monster_->Draw(viewProjection_);
+	//	skydome_->Draw(viewProjection_);
+	//	block_->Draw(viewProjection_);
+	//	select_->Draw(viewProjection_);
+
+	//	break;
+	//default:
+	//	break;
+	//}
+
+	
 	/// </summary>
 
 	// 3Dオブジェクト描画後処理
@@ -258,8 +358,8 @@ void GameScene::CheckAllCollisions()
 	Vector3 posWall;
 
 	//判定対象のAとBの半径
-	float radiusA,radiusB;
-	
+	float radiusA, radiusB;
+
 	//勇者の弾リストの取得
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
 
@@ -285,7 +385,7 @@ void GameScene::CheckAllCollisions()
 		distance = posA - posB;
 
 		//球と球の交差判定
-		if((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+		if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
 		{
 			//自キャラの衝突時コールバックを呼び出す
 			player_->OnCollision();
@@ -294,7 +394,7 @@ void GameScene::CheckAllCollisions()
 		}
 	}
 #pragma endregion
-//
+	//
 #pragma region 勇者の弾とモンスターの当たり判定
 	////モンスターの座標
 	//posA = monsters->GetLocalPosition();
@@ -353,109 +453,56 @@ void GameScene::CheckAllCollisions()
 #pragma endregion
 
 #pragma region モンスターと壁の当たり判定
+	//壁の座標
+	block_->GetWorldPosition(wallPos);
 
-	////壁の座標
-	//posA = block_->GetBlockPosition();
-	//
-	//for (int i = 0; i < blockWidth; i++)
-	//{
-	//	for (int j = 0; j < blockHeight; j++)
-	//	{
-	//		//壁の座標
-	//		block_->GetLocalPosition(wallPos);
+	//壁の半径
+	radiusA = block_->GetRadius();
 
-	//		//壁の半径
-	//		radiusA = block_->GetRadius();
-
-	//		//勇者とモンスターすべての当たり判定
-	//		for (const std::unique_ptr<Monster>& monster : monsters)
-	//		{
-	//			//モンスターの座標
-	//			posB = monster->GetLocalPosition();
-	//			//モンスターの半径
-	//			radiusB = monster->GetRadius();
-	//			//座標AとBの距離を求める
-	//			distance = wallPos[i][j] - posB;
-
-	//			//壁の状態で分岐させる
-
-	//			//球と球の交差判定
-	//			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
-	//			{
-	//				//当たった時のブロックのX番号,Y番号を保存
-	//				onCollisionX = i;
-	//				onCollisionY = j;
-
-	//				//壁の衝突時コールバックを呼び出す
-	//				//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
-	//				possibleMove = block_->OnCollision(onCollisionX,onCollisionY);
-	//			}
-
-	//			//進めるなら移動関数を呼び出す
-	//			if (possibleMove == true)
-	//			{
-	//				//モンスターの衝突時コールバックを呼び出す
-	//				monster->OnCollisionMove();
-	//			}
-	//			//進めないなら方向転換関数を呼びだす
-	//			else if (possibleMove == false)
-	//			{
-	//				monster->ChangeDirection();
-	//			}
-	//		}
-	//	}
-	//}
-			//壁の座標
-			block_->GetLocalPosition(wallPos);
-
-			//壁の半径
-			radiusA = block_->GetRadius();
-
-			//勇者とモンスターすべての当たり判定
-			for (const std::unique_ptr<Monster>& monster : monsters)
+	//勇者とモンスターすべての当たり判定
+	for (const std::unique_ptr<Monster>& monster : monsters)
+	{
+		for (int i = 0; i < blockWidth; i++)
+		{
+			for (int j = 0; j < blockHeight; j++)
 			{
-				for (int i = 0; i < blockWidth; i++)
+				//モンスターの座標
+				posB = monster->GetWorldPosition();
+				//モンスターの半径
+				radiusB = monster->GetRadius();
+				//座標AとBの距離を求める
+				distance = wallPos[i][j] - posB;
+
+				//壁の状態で分岐させる
+
+				//球と球の交差判定
+				if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
 				{
-					for (int j = 0; j < blockHeight; j++)
-					{
-						//モンスターの座標
-						posB = monster->GetLocalPosition();
-						//モンスターの半径
-						radiusB = monster->GetRadius();
-						//座標AとBの距離を求める
-						distance = wallPos[i][j] - posB;
+					//当たった時のブロックのX番号,Y番号を保存
+					onCollisionX = i;
+					onCollisionY = j;
 
-						//壁の状態で分岐させる
-
-						//球と球の交差判定
-						if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
-						{
-							//当たった時のブロックのX番号,Y番号を保存
-							onCollisionX = i;
-							onCollisionY = j;
-
-							//壁の衝突時コールバックを呼び出す
-							//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
-							possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
-							monster->GetIsMove(possibleMove);
-							break;
-						}
-					}
+					//壁の衝突時コールバックを呼び出す
+					//possibleMove = block_->OnCollision(wallPos,onCollisionX,onCollisionY);
+					possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+					monster->GetIsMove(possibleMove);
 				}
-
-				//possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
-
-				////進めるなら移動関数を呼び出す
-				//if (possibleMove == true)
-				//{
-				//	//モンスターの衝突時コールバックを呼び出す
-				//	monster->OnCollisionMove();
-				//}
-				////進めないなら方向転換関数を呼びだす
-				//else if (possibleMove == false)
-				//{
-				//	monster->ChangeDirection();
-				//}
 			}
+		}
+
+		//possibleMove = block_->OnCollision(onCollisionX, onCollisionY);
+
+		////進めるなら移動関数を呼び出す
+		//if (possibleMove == true)
+		//{
+		//	//モンスターの衝突時コールバックを呼び出す
+		//	monster->OnCollisionMove();
+		//}
+		////進めないなら方向転換関数を呼びだす
+		//else if (possibleMove == false)
+		//{
+		//	monster->ChangeDirection();
+		//}
+	}
 #pragma endregion
 }

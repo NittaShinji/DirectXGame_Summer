@@ -547,7 +547,7 @@ Vector3 Block::GetSelectPosition()
 //	
 //}
 
-void Block::GetLocalPosition(Vector3 blockPos[blockWidth][blockHeight])
+void Block::GetWorldPosition(Vector3 blockPos[blockWidth][blockHeight])
 {
 	/*Vector3 monsterPos[blockWidth][blockHeight];*/
 
@@ -559,7 +559,10 @@ void Block::GetLocalPosition(Vector3 blockPos[blockWidth][blockHeight])
 		for (int j = 0; j < blockHeight; j++)
 		{
 			//ワールド行列の平行移動成分を取得(ワールド座標)
-			blockPos[i][j] = worldTransforms_[i][j].translation_;
+			//blockPos[i][j] = worldTransforms_[i][j].translation_;
+			blockPos[i][j].x = worldTransforms_[i][j].matWorld_.m[3][0];
+			blockPos[i][j].y = worldTransforms_[i][j].matWorld_.m[3][1];
+			blockPos[i][j].z = worldTransforms_[i][j].matWorld_.m[3][2];
 		}
 	}
 

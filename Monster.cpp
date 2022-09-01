@@ -96,10 +96,7 @@ void Monster::Update()
 	{
 		bullet->Update();
 	}
-
 #pragma endregion
-
-
 #pragma region 行列の更新
 	//スケーリング用行列を宣言
 	Matrix4 matScale;
@@ -111,9 +108,9 @@ void Monster::Update()
 	Matrix4 matTrans = MathUtility::Matrix4Identity();
 
 	//キャラクター移動処理
-	float scaleX = 5.0f;
-	float scaleY = 5.0f;
-	float scaleZ = 5.0f;
+	float scaleX = 8.0f;
+	float scaleY = 8.0f;
+	float scaleZ = 8.0f;
 
 	//スケーリング倍率を行列に設定
 	matScale.Matrix4Scaling(scaleX, scaleY, scaleZ);
@@ -169,8 +166,6 @@ void Monster::Update()
 	debugText_->SetPos(50, 540);
 	debugText_->Printf("deathTimer_:(%d)",
 		deathTimer_);
-
-
 }
 
 Vector3 Monster::GetLocalPosition()
@@ -300,6 +295,8 @@ void Monster::OnCollisionMove()
 
 		//座標を移動させる(1フレーム分の移動量を足しこむ)
 		worldTransform_.translation_ += Velocity_;
+
+		checkDirectionR = true;
 	}
 
 	else if (direction_ == Direction::Left)
@@ -307,6 +304,8 @@ void Monster::OnCollisionMove()
 		Velocity_ = { kEnemySpeed, 0, 0 };
 		//座標を移動させる(1フレーム分の移動量を足しこむ)
 		worldTransform_.translation_ -= Velocity_;
+
+		checkDirectionL = true;
 	}
 	else
 	{
@@ -329,21 +328,29 @@ void Monster::Move()
 //ぶつかった際に方向を変える
 void Monster::ChangeDirection()
 {
-	if (direction_ == Direction::Right && checkDirectionR == false)
+	if (direction_ == Direction::Right && checkDirectionR == true)
 	{
 		direction_ = Direction::Left;
-		checkDirectionR = true;
-		checkDirectionL = false;
+		checkDirectionR = false;
+
 	}
-	else if(direction_ == Direction::Left && checkDirectionL == false)
+	else if(direction_ == Direction::Left && checkDirectionL == true)
 	{
 		direction_ = Direction::Right;
-		checkDirectionL = true;
-		checkDirectionR = false;
+		checkDirectionL = false;
+		//checkDirectionR = false;
 	}
 }
 
 void Monster::GetIsMove(bool possibleMove)
 {
 	isMoved = possibleMove;
+}
+
+Vector3 Monster::GetWorldPosition()
+{
+	worldResultTransform.x = worldTransform_.matWorld_.m[3][0];
+	worldResultTransform.y = worldTransform_.matWorld_.m[3][1];
+	worldResultTransform.z = worldTransform_.matWorld_.m[3][2];
+	return worldResultTransform;
 }

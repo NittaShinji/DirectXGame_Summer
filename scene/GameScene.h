@@ -15,10 +15,21 @@
 #include "RailCamera.h"
 #include "Block.h"
 #include "Select.h"
+#include "Scene.h"
+
 #include <memory>
 
 /// <summary>
 /// ゲームシーン
+/// 
+ //形態フェーズ
+enum SceneName
+{
+	TITLE,
+	GAME,
+	PAUSE,
+	GAMECLEAR
+};
 /// </summary>
 class GameScene {
 
@@ -73,6 +84,9 @@ class GameScene {
 	/// //単位行列
 	Matrix4 frontVec;
 
+	//オーディオ
+	uint32_t clickAudio_ = 0;
+
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 	uint32_t textureRayHandle_ = 0;
@@ -121,6 +135,13 @@ class GameScene {
 	std::shared_ptr<Block> block_;
 	//カーソルの生成
 	std::unique_ptr<Select> select_;
+
+	//シーンクラスの作成
+	//Scene* scene;
+	std::unique_ptr<Scene> scene_;
+
+	//シーン
+	int scene;
 
 	//敵の初期座標
 	Vector3 enemyPos = { 10,0,40 };

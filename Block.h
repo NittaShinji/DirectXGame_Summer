@@ -46,7 +46,7 @@ public:
 	//ワールド座標を取得
 	Vector3 GetSelectPosition();
 
-	void GetLocalPosition(Vector3 blockPos[blockWidth][blockHeight]);
+	void GetWorldPosition(Vector3 blockPos[blockWidth][blockHeight]);
 
 	//モンスター出現用に座標を渡す関数
 	//Vector3 GetBlockPosition();
@@ -155,7 +155,7 @@ private:
 	Vector3 collisionPos;
 
 	//半径
-	const float radius = 16.0f;
+	const float radius = 4.0f;
 
 };
 
