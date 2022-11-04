@@ -13,6 +13,7 @@
 #include "Enemy.h"
 #include "Skydome.h"
 #include "RailCamera.h"
+#include <sstream>
 
 /// <summary>
 /// ゲームシーン
@@ -59,6 +60,14 @@ class GameScene {
 
 	//登録用関数
 	void AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet);
+
+	//ファイル内容を保存する処理
+	void LoadEnemyPopData();
+
+	//敵発生コマンドの更新
+	void UpdataEnemyPopCommands();
+
+	void EnemyPop(Vector3 position);
 
   private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
@@ -143,5 +152,14 @@ class GameScene {
 
 	//カメラ上方向の角度
 	float viewAngle = 0.0f;
+
+	//敵発生コマンド
+	std::stringstream enemyPopCommands;
+
+	//敵待機中フラグ
+	bool isWaitEnemy;
+
+	//敵待機中タイマー
+	int32_t enemyWaitTimer;
 
 };

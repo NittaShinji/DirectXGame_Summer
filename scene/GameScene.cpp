@@ -7,6 +7,7 @@
 #include <cassert>
 #include <random>
 #include <memory>
+#include <fstream>
 
 #ifndef M_PI
 #define M_PI 3.14159 /* 桁数はもっと多い方がいいかも */
@@ -54,14 +55,7 @@ void GameScene::Initialize() {
 	//自キャラの初期化
 	player_->Initialize(model_, textureHandle_);
 	
-	//敵の生成
-	std::unique_ptr<Enemy> newEnemy = std::make_unique<Enemy>();
-	//敵キャラに自キャラのアドレスを渡す
-	newEnemy->SetPlayer(player_);
-	//敵キャラにゲームシーンのアドレスを渡す
-	newEnemy->SetgameScene(gameScene_);
-	newEnemy->Initialize(model_, enemyPos);
-	enemy_.push_back(std::move(newEnemy));
+	
 	/*Enemy* newEnemy = new Enemy();*/
 	//enemy_.reset(newEnemy);	
 	//敵の初期化
@@ -83,6 +77,9 @@ void GameScene::Initialize() {
 
 	// デバッグカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
+
+
+	LoadEnemyPopData();
 
 	//カメラ視点座標を設定
 	//viewProjection_.eye = { 0,0,-10 };
@@ -137,6 +134,9 @@ void GameScene::Update()
 
 	debugCamera_->Update();
 	player_->Update();
+
+	UpdataEnemyPopCommands();
+
 	for (std::unique_ptr<Enemy>& enemy : enemy_)
 	{
 		enemy->Update();
@@ -298,70 +298,164 @@ void GameScene::CheckAllCollisions()
 #pragma endregion
 
 #pragma region 自弾と敵キャラの当たり判定
-	
-	for (const std::unique_ptr<Enemy>& enemy : enemy_)
-	{
-		//敵キャラの座標
-		posA = enemy->GetLocalPosition();
-		//敵キャラの半径
-		radiusA = enemy->GetRadius();
+
+for (const std::unique_ptr<Enemy>& enemy : enemy_)
+{
+	//敵キャラの座標
+	posA = enemy->GetLocalPosition();
+	//敵キャラの半径
+	radiusA = enemy->GetRadius();
 
 
-		//自弾と敵キャラのすべての当たり判定
-		for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
-		{
-			//自弾の座標
-			posB = playerBullet->GetLocalPosition();
-			//敵弾の半径
-			radiusB = playerBullet->GetRadius();
-			//座標AとBの距離を求める
-			distance = posA - posB;
-
-			//球と球の交差判定
-			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
-			{
-				//自キャラの衝突時コールバックを呼び出す
-				enemy->OnCollision();
-				//敵弾の衝突時コールバックを呼び出す
-				playerBullet->OnCollision();
-			}
-		}
-	}
-#pragma endregion
-
-#pragma region 自弾と敵弾の当たり判定
-	//自弾と敵弾のすべての当たり判定
+	//自弾と敵キャラのすべての当たり判定
 	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
 	{
 		//自弾の座標
 		posB = playerBullet->GetLocalPosition();
 		//敵弾の半径
 		radiusB = playerBullet->GetRadius();
+		//座標AとBの距離を求める
+		distance = posA - posB;
 
-		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enmeyBullets_)
+		//球と球の交差判定
+		if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
 		{
-			//敵弾の座標
-			posB = enemyBullet->GetLocalPosition();
-			//敵弾の半径
-			radiusB = enemyBullet->GetRadius();
-			//座標AとBの距離を求める
-			distance = posA - posB;
-
-			//球と球の交差判定
-			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
-			{
-				//自キャラの衝突時コールバックを呼び出す
-				playerBullet->OnCollision();
-				//敵弾の衝突時コールバックを呼び出す
-				enemyBullet->OnCollision();
-			}
+			//自キャラの衝突時コールバックを呼び出す
+			enemy->OnCollision();
+			//敵弾の衝突時コールバックを呼び出す
+			playerBullet->OnCollision();
 		}
 	}
+}
+#pragma endregion
+
+#pragma region 自弾と敵弾の当たり判定
+//自弾と敵弾のすべての当たり判定
+for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
+{
+	//自弾の座標
+	posB = playerBullet->GetLocalPosition();
+	//敵弾の半径
+	radiusB = playerBullet->GetRadius();
+
+	for (const std::unique_ptr<EnemyBullet>& enemyBullet : enmeyBullets_)
+	{
+		//敵弾の座標
+		posB = enemyBullet->GetLocalPosition();
+		//敵弾の半径
+		radiusB = enemyBullet->GetRadius();
+		//座標AとBの距離を求める
+		distance = posA - posB;
+
+		//球と球の交差判定
+		if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+		{
+			//自キャラの衝突時コールバックを呼び出す
+			playerBullet->OnCollision();
+			//敵弾の衝突時コールバックを呼び出す
+			enemyBullet->OnCollision();
+		}
+	}
+}
 #pragma endregion
 }
 
-void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) 
+void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet)
 {
 	//リストに登録する
 	enmeyBullets_.push_back(std::move(enemyBullet));
+}
+
+void GameScene::LoadEnemyPopData()
+{
+	//ファイルを開く
+	std::ifstream file;
+	file.open("Resources\\enemyPop.csv");
+	assert(file.is_open());
+
+	//ファイルの内容を文字列ストリームにコピー
+	enemyPopCommands << file.rdbuf();
+
+	//ファイルを閉じる
+	file.close();
+}
+
+void GameScene::EnemyPop(Vector3 position)
+{
+	//敵の生成
+	std::unique_ptr<Enemy> newEnemy = std::make_unique<Enemy>();
+	//敵キャラに自キャラのアドレスを渡す
+	newEnemy->SetPlayer(player_);
+	//敵キャラにゲームシーンのアドレスを渡す
+	newEnemy->SetgameScene(gameScene_);
+	newEnemy->Initialize(model_, position);
+	enemy_.push_back(std::move(newEnemy));
+}
+
+void GameScene::UpdataEnemyPopCommands()
+{
+	//待機処理
+	if (isWaitEnemy)
+	{
+		enemyWaitTimer--;
+		if (enemyWaitTimer <= 0)
+		{
+			//待機完了
+			isWaitEnemy = false;
+		}
+		return;
+	}
+
+	//1行分の文字列を入れる変数
+	std::string line;
+
+	//コマンド実行ループ
+	while (getline(enemyPopCommands, line))
+	{
+		//1行分の文字列をストリームに変換して解析しやすくする
+		std::istringstream line_stream(line);
+
+		std::string word;
+		//,区切りで行の先頭文字列を取得
+		getline(line_stream, word, ',');
+
+		// "//"から始まる行はコメント
+		if (word.find("//") == 0)
+		{
+			//コメント行を飛ばす
+			continue;
+		}
+
+		//POPコマンド
+		if (word.find("POP") == 0)
+		{
+			//X座標
+			getline(line_stream, word, ',');
+			float x = (float)std::atof(word.c_str());
+			//Y座標
+			getline(line_stream, word, ',');
+			float y = (float)std::atof(word.c_str());
+			//Z座標
+			getline(line_stream, word, ',');
+			float z = (float)std::atof(word.c_str());
+
+			//敵を発生させる
+			EnemyPop(Vector3(x, y, z));
+		}
+		//WAITコマンド
+		else if (word.find("WAIT") == 0)
+		{
+			getline(line_stream, word, ',');
+
+			//待ち時間
+			int32_t waitTime = atoi(word.c_str());
+
+			//待機開始
+			isWaitEnemy = true;
+			enemyWaitTimer = waitTime;
+
+			//コマンドループを抜ける
+			break;
+		}
+	}
 }
