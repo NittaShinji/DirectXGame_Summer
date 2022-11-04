@@ -53,12 +53,15 @@ public:
 	//void SetPlayer(std::unique_ptr<Player> player) { player_ = player; }
 	//void SetPlayer(std::unique_ptr<Player> player) { player_ = player; }
 	void SetPlayer(std::shared_ptr<Player> player) { player_ = player; }
+	//void SetgameScene(std::shared_ptr<GameScene> gameScene) { gameScene_ = gameScene; }
+	void SetgameScene(GameScene *gameScene) { gameScene_ = gameScene; }
+
 
 	// 衝突を検知したら呼び出されるコールバック関数
 	void OnCollision();
 
-	//弾リストを取得
-	const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() { return bullets_; }
+	////弾リストを取得
+	//const std::list<std::unique_ptr<EnemyBullet>>& GetBullets() { return bullets_; }
 
 	//ワールド座標を取得
 	Vector3 GetLocalPosition();
@@ -66,7 +69,7 @@ public:
 	//半径を取得
 	float GetRadius();
 
-	void SetgameScene(GameScene* gameScene) { gameScene_ = gameScene; }
+	bool GetIsDead() { return isDead_; }
 
 private:
 
@@ -84,6 +87,12 @@ private:
 
 	//ゲームシーン
 	GameScene* gameScene_ = nullptr;
+	//std::unique_ptr<GameScene> gameScene_ = nullptr;
+	//std::shared_ptr<GameScene> gameScene_ = nullptr;
+
+	//自キャラ
+	std::shared_ptr<Player> player_;
+
 
 	// 敵の速度
 	const float kEnemySpeed = 0.1f;
@@ -95,13 +104,12 @@ private:
 	//離脱フェーズの速度
 	Vector3 LeaveSpeed = { 0.1,0,0 };
 
-	
 	//発射タイマー
 	int32_t bulletCoolTimer = 0;
 
-	//自キャラ
-	std::shared_ptr<Player> player_;
-
+	//デスフラグ
+	bool isDead_ = false;
+	
 	//半径
 	const float radius = 0.5f;
 	

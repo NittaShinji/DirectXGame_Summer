@@ -112,14 +112,17 @@ class GameScene {
 	//プレイヤーの生成
 	std::shared_ptr<Player> player_;
 	//敵の生成
-	std::unique_ptr<Enemy> enemy_;
+	//std::unique_ptr<Enemy> enemy_;
+	std::list<std::unique_ptr<Enemy>> enemy_;
 	//天球の生成
 	std::unique_ptr<Skydome> skydome_;
 	//レールカメラの生成
 	std::shared_ptr<RailCamera> railCamera_;
 
 	//敵の弾
-	std::list<std::unique_ptr<EnemyBullet>> enmeybullets_;
+	std::list<std::unique_ptr<EnemyBullet>> enmeyBullets_;
+
+	//std::shared_ptr<GameScene> gameScene_ = std::make_unique<GameScene>();
 
 	GameScene* gameScene_ = nullptr;
 

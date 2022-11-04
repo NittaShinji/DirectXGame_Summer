@@ -1,5 +1,6 @@
 #include "Enemy.h"
 #include "Player.h"
+#include "GameScene.h"
 #include <cassert>
 
 Enemy::Enemy()
@@ -40,10 +41,10 @@ void Enemy::Initialize(Model* model, const Vector3& position)
 //更新
 void Enemy::Update()
 {
-	//デスフラグの立った弾を削除
-	bullets_.remove_if([](std::unique_ptr<EnemyBullet>& bullet) {
-		return bullet->IsDead();
-		});
+	////デスフラグの立った弾を削除
+	//bullets_.remove_if([](std::unique_ptr<EnemyBullet>& bullet) {
+	//	return bullet->IsDead();
+	//	});
 
 	switch (phase_)
 	{
@@ -66,11 +67,11 @@ void Enemy::Update()
 
 #pragma region キャラクターの攻撃
 
-	//弾更新
-	for (std::unique_ptr<EnemyBullet>& bullet : bullets_)
-	{
-		bullet->Update();
-	}
+	////弾更新
+	//for (std::unique_ptr<EnemyBullet>& bullet : bullets_)
+	//{
+	//	bullet->Update();
+	//}
 
 #pragma endregion
 
@@ -161,7 +162,10 @@ void Enemy::Fire()
 
 	//弾を登録する
 	//bullet_.reset(newBullet);
-	bullets_.push_back(std::move(newBullet));
+
+	gameScene_->AddEnemyBullet(std::move(newBullet));
+
+	//bullets_.push_back(std::move(newBullet));
 
 }
 
@@ -169,10 +173,6 @@ void Enemy::Fire()
 void Enemy::Draw(const ViewProjection& viewProjection)
 {
 	enemyModel_->Draw(enemyWorldTransform_, viewProjection, enemyHandle_);
-	for (std::unique_ptr<EnemyBullet>& bullet : bullets_)
-	{
-		bullet->Draw(viewProjection);
-	}
 }
 
 void Enemy::ApproachInitialize()
@@ -228,7 +228,11 @@ Vector3 Enemy::Root(Vector3 velocity, WorldTransform worldTransform_)
 	return resultVec;
 }
 
-void Enemy::OnCollision() {}
+void Enemy::OnCollision() 
+{
+	//デスフラグを立てる
+	isDead_ = true;
+}
 
 float Enemy::GetRadius()
 {

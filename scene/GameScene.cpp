@@ -38,6 +38,7 @@ void GameScene::Initialize() {
 	//player_ = new Player();
 	////自キャラの初期化
 	//player_->Initialize(model_ ,textureHandle_);
+	gameScene_ = new GameScene;
 	
 	//レールカメラの生成
 	RailCamera* newRailCamera = new RailCamera;
@@ -54,10 +55,16 @@ void GameScene::Initialize() {
 	player_->Initialize(model_, textureHandle_);
 	
 	//敵の生成
-	Enemy* newEnemy = new Enemy();
-	enemy_.reset(newEnemy);	
+	std::unique_ptr<Enemy> newEnemy = std::make_unique<Enemy>();
+	//敵キャラに自キャラのアドレスを渡す
+	newEnemy->SetPlayer(player_);
+	//敵キャラにゲームシーンのアドレスを渡す
+	newEnemy->SetgameScene(gameScene_);
+	newEnemy->Initialize(model_, enemyPos);
+	enemy_.push_back(std::move(newEnemy));
+	/*Enemy* newEnemy = new Enemy();*/
+	//enemy_.reset(newEnemy);	
 	//敵の初期化
-	enemy_->Initialize(model_,enemyPos);
 
 	//天球の生成
 	Skydome* newSkydome = new Skydome();
@@ -65,13 +72,12 @@ void GameScene::Initialize() {
 	//天球の初期化
 	skydome_->Initialize(modelSkydome_);
 
-	//敵キャラに自キャラのアドレスを渡す
-	enemy_->SetPlayer(player_);
+	////敵キャラに自キャラのアドレスを渡す
+	//enemy_->SetPlayer(player_);
 
-	//敵キャラにゲームシーンのアドレスを渡す
-	enemy_->SetgameScene(gameScene_);
-
-	
+	////敵キャラにゲームシーンのアドレスを渡す
+	//enemy_->SetgameScene(gameScene_);
+	//
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
 
@@ -111,16 +117,41 @@ void GameScene::Initialize() {
 void GameScene::Update() 
 {
 	assert(player_);
-	assert(enemy_);
+	//assert(enemy_);
+
+	for (std::unique_ptr<Enemy>& enemy : enemy_)
+	{
+		if (enemy->GetIsDead() == true)
+		{
+			//デスフラグの立った弾を削除
+			enmeyBullets_.remove_if([](std::unique_ptr<EnemyBullet>& bullet) {
+				return bullet->IsDead();
+				});
+		}
+	}
+
+	enemy_.remove_if([](std::unique_ptr<Enemy>& enemy)
+	{
+		return enemy->GetIsDead();
+	});
 
 	debugCamera_->Update();
 	player_->Update();
-	enemy_->Update();
+	for (std::unique_ptr<Enemy>& enemy : enemy_)
+	{
+		enemy->Update();
+	}
+	
+	//弾更新
+	for (std::unique_ptr<EnemyBullet>& bullet : enmeyBullets_)
+	{
+		bullet->Update();
+	}
 	skydome_->Update();
-	railCamera_->Update();
+	//railCamera_->Update();
 
-	//viewProjection_ = debugCamera_->GetViewProjection();
-	viewProjection_ = railCamera_->GetViewProjection();
+	viewProjection_ = debugCamera_->GetViewProjection();
+	//viewProjection_ = railCamera_->GetViewProjection();
 	
 	//行列の再計算
 	viewProjection_.UpdateMatrix();
@@ -192,7 +223,16 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	player_->Draw(viewProjection_,textureHandle_);
-	enemy_->Draw(viewProjection_);
+
+	for (std::unique_ptr<Enemy>& enemy : enemy_)
+	{
+		enemy->Draw(viewProjection_);
+	}
+	
+	for (std::unique_ptr<EnemyBullet>& bullet : enmeyBullets_)
+	{
+		bullet->Draw(viewProjection_);
+	}
 	skydome_->Draw(viewProjection_);
 
 	/// </summary>
@@ -229,7 +269,7 @@ void GameScene::CheckAllCollisions()
 	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
 
 	//敵弾リストの取得
-	const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = enemy_->GetBullets();
+	//const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = enemy_->GetBullets();
 
 #pragma region 自キャラと敵弾の当たり判定
 	//自キャラの座標
@@ -237,7 +277,7 @@ void GameScene::CheckAllCollisions()
 	//自キャラの半径
 	radiusA = player_->GetRadius();
 	//自キャラと敵弾すべての当たり判定
-	for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+	for (const std::unique_ptr<EnemyBullet>& enemyBullet : enmeyBullets_)
 	{
 		//敵弾の座標
 		posB = enemyBullet->GetLocalPosition();
@@ -258,28 +298,33 @@ void GameScene::CheckAllCollisions()
 #pragma endregion
 
 #pragma region 自弾と敵キャラの当たり判定
-	//敵キャラの座標
-	posA = enemy_->GetLocalPosition();
-	//敵キャラの半径
-	radiusA = enemy_->GetRadius();
-
-	//自弾と敵キャラのすべての当たり判定
-	for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
+	
+	for (const std::unique_ptr<Enemy>& enemy : enemy_)
 	{
-		//自弾の座標
-		posB = playerBullet->GetLocalPosition();
-		//敵弾の半径
-		radiusB = playerBullet->GetRadius();
-		//座標AとBの距離を求める
-		distance = posA - posB;
+		//敵キャラの座標
+		posA = enemy->GetLocalPosition();
+		//敵キャラの半径
+		radiusA = enemy->GetRadius();
 
-		//球と球の交差判定
-		if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+
+		//自弾と敵キャラのすべての当たり判定
+		for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets)
 		{
-			//自キャラの衝突時コールバックを呼び出す
-			enemy_->OnCollision();
-			//敵弾の衝突時コールバックを呼び出す
-			playerBullet->OnCollision();
+			//自弾の座標
+			posB = playerBullet->GetLocalPosition();
+			//敵弾の半径
+			radiusB = playerBullet->GetRadius();
+			//座標AとBの距離を求める
+			distance = posA - posB;
+
+			//球と球の交差判定
+			if ((distance.x) * (distance.x) + (distance.y) * (distance.y) + (distance.z) * (distance.z) <= (radiusA + radiusB) * 2)
+			{
+				//自キャラの衝突時コールバックを呼び出す
+				enemy->OnCollision();
+				//敵弾の衝突時コールバックを呼び出す
+				playerBullet->OnCollision();
+			}
 		}
 	}
 #pragma endregion
@@ -293,7 +338,7 @@ void GameScene::CheckAllCollisions()
 		//敵弾の半径
 		radiusB = playerBullet->GetRadius();
 
-		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets)
+		for (const std::unique_ptr<EnemyBullet>& enemyBullet : enmeyBullets_)
 		{
 			//敵弾の座標
 			posB = enemyBullet->GetLocalPosition();
@@ -318,5 +363,5 @@ void GameScene::CheckAllCollisions()
 void GameScene::AddEnemyBullet(std::unique_ptr<EnemyBullet> enemyBullet) 
 {
 	//リストに登録する
-	enmeybullets_.push_back(std::move(enemyBullet));
+	enmeyBullets_.push_back(std::move(enemyBullet));
 }
